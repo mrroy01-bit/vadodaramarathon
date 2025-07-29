@@ -1,8 +1,8 @@
 // VmEditions.jsx
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import Sidebar from "../Component/SidebarTab";
-import Header from "../Component/Header";
-import Footer from "../Component/Footer";
+import Sidebar from "./SidebarTab";
+import Header from "../../Component/Header";
+import Footer from "../../Component/Footer";
 export default function VmEditions() {
   const location = useLocation();
   const navigate = useNavigate();
