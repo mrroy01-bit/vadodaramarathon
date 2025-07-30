@@ -3,9 +3,11 @@ import React from "react";
 const VM2023 = () => {
   return (
     <>
-      <section className="w-[90%] mx-auto my-8 p-6 bg-white">
-        <h1 className="text-4xl font-bold">VM 2023 : Fit India to Atmanirbhar India</h1>
-        <p className="mt-5 mb-4 text-lg font-light text-left text-gray-700">
+      <section className="w-[95%] max-w-4xl mt-28 sm:mt-20 mx-auto my-8 p-4 sm:p-6 bg-white">
+        <h1 className="text-2xl sm:text-4xl font-bold">
+          VM 2023 : Fit India to Atmanirbhar India
+        </h1>
+        <p className="mt-4 mb-3 text-base sm:text-lg font-light text-left text-gray-700">
           The 2023 Vadodara Marathon is the landmark 10th edition and celebrates
           the Spirit of Fitness in Atmanirbhar India. The pandemic years taught
           all of us many lessons, yet the prime one is the need to fit and
@@ -15,7 +17,7 @@ const VM2023 = () => {
           Atmanirbharta towards achieving fitness for oneself and for the
           nation.
         </p>
-        <p className="mt-5 mb-4 text-lg font-light text-left text-gray-700">
+        <p className="mt-4 mb-3 text-base sm:text-lg font-light text-left text-gray-700">
           Vadodara Marathon has a tradition of organizing unique and exciting
           pre-events in the lead-up to the Marathon, for each edition. The
           ever-popular Queens Run was held Friday 2nd December 2022, with over
@@ -29,8 +31,10 @@ const VM2023 = () => {
           included voter awareness, women’s empowerment, and safety of Vadodara
           at night for women.
         </p>
-        <h3 className="mt-5 mb-4 text-3xl font-bold">VM: Fitness during the Pandemic (2020-2022)</h3>
-        <p className="mb-4 text-lg text-left text-gray-700">
+        <h3 className="mt-4 mb-3 text-xl sm:text-3xl font-bold">
+          VM: Fitness during the Pandemic (2020-2022)
+        </h3>
+        <p className="mb-3 text-base sm:text-lg text-left text-gray-700">
           During the pandemic and lockdown period of 2020-22, VM planned and
           conducted various activities, to ensure that families and individual
           remain fit, and follow a healthy lifestyle even within their homes, as
@@ -40,8 +44,10 @@ const VM2023 = () => {
           VM fulfilled its community serve obligations throughout the pandemic
           enforced lockdown.
         </p>
-        <h4 className="mt-5 mb-4 text-2xl font-bold">VM organized and conducted these events:</h4>
-        <ul className="pl-8 mb-4 list-[square] text-lg text-left text-gray-700">
+        <h4 className="mt-4 mb-3 text-lg sm:text-2xl font-bold">
+          VM organized and conducted these events:
+        </h4>
+        <ul className="pl-5 sm:pl-8 mb-3 list-[square] text-base sm:text-lg text-left text-gray-700">
           <li className="mb-2">
             TCCB: The latest edition of The Cycling Club of Baroda’s “Epreuve de
             Force: Race to Pavagadh” was held on 7th May 2022, with winners and
@@ -67,7 +73,6 @@ const VM2023 = () => {
             world, with flag off done by Shri Vijaybhai Rupani, then Hon. Chief
             Minister of Gujarat, in a virtual ceremony.
           </li>
-
           <li className="mb-2">
             Medical Supplies: VM donated 2 ventilators, one each to SSG Hospital
             and Gotri Medical Hospital at Vadodara, on 24th September 2020
@@ -75,12 +80,10 @@ const VM2023 = () => {
             3rd June 2020 by running at home; all VM members ran within their
             homes also.
           </li>
-
           <li className="mb-2">
             Ambulance Donation: A fully equipped ambulance was donated to SSG
             Hospital on 23rd May 2020.
           </li>
-
           <li className="mb-2">
             Meals: VM provided for 8,200 lunches and 8,550 dinners, from 28th
             March to 30th April 2020, to the homeless and other needy people.
@@ -88,7 +91,6 @@ const VM2023 = () => {
             15th April 2020, to needy families, of street dwellers and migrant
             labourers.
           </li>
-
           <li className="mb-2">
             VM Connect: Held on 18th February 2020 at Hotel Grand Mercure, with
             corporate organizations, and all VM sponsors and partners along with

@@ -19,6 +19,19 @@ import Affiliations from './pages/KnowUs/Tab/Affiliations';
 import Sponsors from './pages/KnowUs/Tab/Sponsors';
 import Partners from './pages/KnowUs/Tab/Partners';
 
+import Philanthropy from './pages/Philanthropy/Philanthropy';
+import CausesWeSupport from './pages/Philanthropy/Tab/CausesSupport';
+import ObservershipProgram from './pages/Philanthropy/Tab/ObservershipProgram';
+import VmConnect from './pages/Philanthropy/Tab/VMConnect';
+import NgoPartner from './pages/Philanthropy/Tab/NGOPartner';
+import Donate from './pages/Philanthropy/Tab/Donate';
+
+import JoinTheTeam from './pages/JoinTheTeam/JoinTheTeam';
+import Jobs from './pages/JoinTheTeam/Tab/Jobs';
+import Volunteer from './pages/JoinTheTeam/Tab/Volunteer';
+import Partner from './pages/JoinTheTeam/Tab/Partner';
+import Sponsor from './pages/JoinTheTeam/Tab/Sponsor';
+
 
 import { Route, Routes, Navigate } from 'react-router-dom';
 function App() {
@@ -49,6 +62,24 @@ function App() {
           <Route path="partners" element={<Partners />} />
           <Route path="other-edition" element={<OtherEdition />} />
         </Route>
+
+       <Route path="/philanthropy" element={<Philanthropy />}>
+          <Route index element={<Navigate to="causes-support" />} />
+          <Route path="causes-support" element={<CausesWeSupport />} />
+          <Route path="the-mg-nurture-observership-program" element={<ObservershipProgram />} />
+          <Route path="vm-connect" element={<VmConnect />} />
+          <Route path="ngo-partner" element={<NgoPartner />} />
+          <Route path="donate" element={<Donate />} />
+        </Route>
+
+       <Route path="/join-the-team" element={<JoinTheTeam />}>
+          <Route index element={<Navigate to="jobs" />} />
+          <Route path="jobs" element={<Jobs />} />
+          <Route path="volunteer" element={<Volunteer />} />
+          <Route path="partner" element={<Partner />} />
+          <Route path="sponsor" element={<Sponsor />} />
+        </Route>
+
    </Routes>
   );
 }

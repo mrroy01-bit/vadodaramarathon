@@ -26,7 +26,7 @@ const Sponsors = () => {
   ];
 
   return (
-    <section className="w-[90%] mx-auto my-8 p-8 bg-white ">
+    <section className="w-[90%] mt-28 mx-auto my-8 p-8 bg-white ">
       <h1 className="mb-8 text-3xl font-bold text-center md:text-4xl">Sponsors</h1>
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center">
         {sponsors.map((s, i) => (

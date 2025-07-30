@@ -1,22 +1,22 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi"; // Menu and Close icons
-import Sidebar from "../KnowUs/Sidebar";
+import Sidebar from "../Philanthropy/sidebar";
 import Header from "../../Component/Header";
 import Footer from "../../Component/Footer";
 
-export default function KnowUs() {
+export default function Philanthropy() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Determine active tab from URL path
-  const activeKey = location.pathname.split("/")[2] || "introduction";
+  const activeKey = location.pathname.split("/")[2] || "causes-support";
 
   return (
     <>
       <Header />
-      <div className="flex min-h-screen relative">
+      <div className="flex  min-h-screen relative">
         {/* Mobile menu icon */}
         {!sidebarOpen && (
           <button
@@ -49,7 +49,7 @@ export default function KnowUs() {
           <Sidebar
             activeKey={activeKey}
             setActiveKey={(key) => {
-              navigate(`/know-us/${key}`);
+              navigate(`/philanthropy/${key}`);
               setSidebarOpen(false); // Close sidebar on navigation (mobile)
             }}
           />

@@ -3,7 +3,7 @@ import React from "react";
 const Introduction = () => {
   return (
     <>
-      <section className="mt-16 mb-8 w-[90%] max-w-4xl mx-auto px-4">
+      <section className="mt-48 mb-8 w-[90%] max-w-4xl mx-auto px-4">
         <h1 className="text-2xl font-bold">Introduction</h1>
         <p className="mt-4 text-lg text-left text-gray-700">
           Vadodara Marathon (VM) was incepted in 2009, as a not-for-profit
