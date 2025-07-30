@@ -48,11 +48,11 @@ const Header = () => {
     <header className="relative z-50 w-full shadow-sm">
       {/* Top Row */}
       <div className="flex flex-wrap items-center justify-between px-4 py-3 bg-white border-b sm:flex-nowrap sm:px-6">
-        <img
+       <img
           src={Logo}
           alt="Logo"
           className="h-20 sm:h-40 w-auto object-contain sm:absolute sm:left-6 sm:top-[13px]"
-        />
+        /> 
 
         <div className="flex flex-wrap justify-end items-center gap-2 sm:ml-[65vw] sm:gap-4">
           <img src={Aims} alt="AIMS" className="w-auto h-8 sm:h-10" />
