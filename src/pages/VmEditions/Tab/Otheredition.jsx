@@ -3,7 +3,7 @@ import React from "react";
 const OtherEdition = () => {
   return (
     <>
-      <div className="mt-16 mb-8 w-[90%]">
+      <div className="mt-28 mb-8 w-[90%]">
         <h2 className="mt-16 text-xl font-bold">
           Run-up Events of each edition of the Marathon
         </h2>

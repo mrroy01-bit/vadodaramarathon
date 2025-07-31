@@ -3,7 +3,7 @@ import React from "react";
 const NinthEdition = () => {
   return (
     <>
-    <section className="w-[90%] mx-auto my-8 p-6 bg-white ">
+    <section className="w-[90%] mt-28 mx-auto my-8 p-6 bg-white ">
       <h2 className="mb-4 text-2xl font-bold">
         9th edition of MG Vadodara International Marathon (5th January 2020)
       </h2>

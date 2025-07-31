@@ -10,8 +10,8 @@ const menuItems = [
 
 export default function Sidebar({ activeKey, setActiveKey }) {
   return (
-    <aside className="w-64 h-screen p-4  mt-28 ml-12">
-      <h2 className="text-xl font-bold mb-6 text-gray-800">VM Editions</h2>
+    <aside className="w-64 h-screen p-4 ml-12 mt-28">
+      <h2 className="mb-6 text-xl font-bold text-gray-800">VM Editions</h2>
       <ul className="space-y-2">
         {menuItems.map((item) => (
           <li key={item.key}>

@@ -3,6 +3,7 @@ import Header from "../Component/Header";
 import Banner from "../assest/banner.jpg";
 import VideoCard from "../Component/VideoCard";
 import SponsorSlider from "../Component/SponsorSlider";
+import ValuablePartners from "../Component/ValuedPartners";
 import ValuableAssociates from "../Component/ValuableAssociates";
 import Footer from "../Component/Footer";
 import {
@@ -28,7 +29,11 @@ const LandingPage = () => {
       {/* Banner Section */}
       <div className="banner">
         <div className="overlay">
-          <img src={Banner} alt="Banner" className="w-full h-auto object-cover" />
+          <img
+            src={Banner}
+            alt="Banner"
+            className="w-full h-auto object-cover"
+          />
         </div>
         <div className="btn-reg flex flex-col sm:flex-row justify-between items-center gap-4 p-6 bg-[#F2F2F2] text-center">
           <h2 className="text-2xl sm:text-4xl font-bold text-[#542F78]">
@@ -55,10 +60,11 @@ const LandingPage = () => {
           Majors.
           <br />
           <br />
-          Vadodara Marathon’s motto of “Sports, Seva, Swachhta” is at the core of all
-          the activities, supporting various social and civic causes. Vadodara
-          Marathon, or VM, offers a platform to local NGOs and Divyang Associations
-          to increase their visibility, raise awareness and funds for their causes.
+          Vadodara Marathon’s motto of “Sports, Seva, Swachhta” is at the core
+          of all the activities, supporting various social and civic causes.
+          Vadodara Marathon, or VM, offers a platform to local NGOs and Divyang
+          Associations to increase their visibility, raise awareness and funds
+          for their causes.
         </p>
       </div>
 
@@ -116,6 +122,7 @@ const LandingPage = () => {
       </section>
 
       <SponsorSlider />
+      <ValuablePartners />
       <ValuableAssociates />
       <Footer />
     </>

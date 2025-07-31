@@ -3,7 +3,7 @@ import React from "react";
 const TwelfthEdition = () => {
   return (
     <>
-      <div className="mt-16 mb-8 w-[90%]">
+      <div className="mt-28 mb-8 w-[90%]">
         <h2 className="mt-16 font-bold text-xl">
           12 th edition of MG Vadodara International Marathon (MGVM 2025)
         </h2>
