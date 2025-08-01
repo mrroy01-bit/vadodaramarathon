@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi"; 
 import Sidebar from "../VmEditions/SidebarTab";
 import Header from "../../Component/Header";
-import Footer from "../../Component/Footer";
+import Footer from "../../Component/Footer/Footer";
 
 export default function VmEditions() {
   const location = useLocation();

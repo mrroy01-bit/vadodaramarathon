@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FiMenu } from "react-icons/fi"; // Menu icon
 import Sidebar from "../JoinTheTeam/sidebar";
 import Header from "../../Component/Header";
-import Footer from "../../Component/Footer";
+import Footer from "../../Component/Footer/Footer";
 
 export default function KnowUs() {
   const location = useLocation();

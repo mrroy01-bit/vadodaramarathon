@@ -1,17 +1,16 @@
 import React, { useState } from "react";
-import Bhailal from "../assest/bhailal_amin.png";
-import GooglePlay from "../assest/googleplay.png";
+import Bhailal from "../../assest/bhailal_amin.png";
+import GooglePlay from "../../assest/googleplay.png";
 import { FaTimes, FaEnvelope, FaWhatsapp, FaRegCommentDots, FaQuestionCircle, FaHeadset } from "react-icons/fa";
-
 const footerLinks = [
-  { name: "Past Events", href: "#" },
-  { name: "Privacy Notice", href: "#" },
-  { name: "Press", href: "#" },
-  { name: "Gallery", href: "#" },
-  { name: "Affiliations", href: "#" },
-  { name: "FAQs", href: "#" },
-  { name: "Contact Us", href: "#" },
-  { name: "Terms & Conditions", href: "#" },
+  { name: "Past Events", href: "/past-events" },
+  { name: "Privacy Notice", href: "/privacy-notice" },
+  { name: "Press", href: "/press" },
+  { name: "Gallery", href: "/gallery" },
+  { name: "Affiliations", href: "/know-us/affiliations" },
+  { name: "FAQs", href: "/faqs" },
+  { name: "Contact Us", href: "/contact" },
+  { name: "Terms & Conditions", href: "/terms-and-conditions" },
 ];
 
 const Footer = () => {
@@ -19,6 +18,7 @@ const Footer = () => {
 
   return (
     <>
+
       {/* Floating Vertical Button */}
       {!open && (
         <div
@@ -84,9 +84,15 @@ const Footer = () => {
 
           {/* Merchandise Button */}
           <div className="flex justify-center my-8">
-            <button className="bg-[#542F78] text-white px-7 py-2.5 rounded text-base font-semibold shadow hover:bg-primary/90 transition">
-              Marathon Memories : V M Merchandise
-            </button>
+            <a
+              href="https://www.gingercrush.com/collections/vadodara-marathon"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <button className="bg-[#542F78] text-white px-7 py-2.5 rounded text-base font-semibold shadow hover:bg-primary/90 transition">
+                Marathon Memories : V M Merchandise
+              </button>
+            </a>
           </div>
 
           {/* App Stores & Partner Section */}

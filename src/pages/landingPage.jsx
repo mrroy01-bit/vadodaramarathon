@@ -5,7 +5,7 @@ import VideoCard from "../Component/VideoCard";
 import SponsorSlider from "../Component/SponsorSlider";
 import ValuablePartners from "../Component/ValuedPartners";
 import ValuableAssociates from "../Component/ValuableAssociates";
-import Footer from "../Component/Footer";
+import Footer from "../Component/Footer/Footer";
 import {
   FaClipboardList,
   FaQuestionCircle,

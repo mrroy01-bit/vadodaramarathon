@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi"; // Menu and Close icons
 import Sidebar from "../Philanthropy/sidebar";
 import Header from "../../Component/Header";
-import Footer from "../../Component/Footer";
+import Footer from "../../Component/Footer/Footer";
 
 export default function Philanthropy() {
   const location = useLocation();
