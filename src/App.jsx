@@ -45,6 +45,12 @@ import Year2018 from './Component/Footer/Gallery/Tab/2018';
 import PressPage from './Component/Footer/Press';
 import ArticlePage from './Component/Footer/ArticlePage';
 
+import UserLogin from './pages/Auth/Login/UserLogin';
+import UserRegister from './pages/Auth/Register/UserRegister';
+import PasswordForget from './pages/Auth/Login/PasswordForget';
+import AmbassadorLogin from './pages/Auth/Login/AmbassadorLogin';
+import AmbassadorRegister from './pages/Auth/Register/AmbassadorRegister';
+import Dashboard from './pages/Dashboard/Dashboard';
 
 
 import { Route, Routes, Navigate } from 'react-router-dom';
@@ -109,6 +115,14 @@ function App() {
 
         <Route path="/press" element={<PressPage />} />
         <Route path="/press/:id" element={<ArticlePage />} />
+
+        <Route path="/login" element={<UserLogin />} />
+        <Route path="/register" element={<UserRegister />} />
+        <Route path="/password-forget" element={<PasswordForget />} />
+
+        <Route path="/ambassador-login" element={<AmbassadorLogin />} />
+        <Route path="/ambassador-register" element={<AmbassadorRegister />} />
+        <Route path="/dashboard" element={<Dashboard />} />
 
    </Routes>
   );
