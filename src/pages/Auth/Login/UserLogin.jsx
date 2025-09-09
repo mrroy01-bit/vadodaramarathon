@@ -1,21 +1,37 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { authService } from '../../../services/api';
 
 const UserLogin = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Login logic will be implemented here
-    console.log('Login form submitted:', formData);
+    setError('');
+    setLoading(true);
+    
+    try {
+      const response = await authService.login(formData);
+      console.log('Login successful:', response);
+      // Redirect to dashboard or home page after successful login
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.message || 'Invalid email or password. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,11 +75,19 @@ const UserLogin = () => {
               </Link>
             </div>
           </div>
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+            disabled={loading}
+            className={`w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
+              loading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
           
           <p className="mt-6 text-center text-gray-600">

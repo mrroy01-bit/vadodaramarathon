@@ -4,6 +4,7 @@ This is the official website for the Vadodara Marathon, built with React and Tai
 
 ## Features
 - Event information and registration
+- User authentication (login/registration)
 - Sponsor and partner showcases
 - Photo galleries
 - Responsive design
@@ -13,8 +14,19 @@ This is the official website for the Vadodara Marathon, built with React and Tai
   - `Component/` - Reusable UI components
   - `pages/` - Main pages (Landing, Causes, Know Us, etc.)
   - `assest/` - Images and static assets
+  - `services/` - API services and utilities
 - `public/` - Static files and HTML template
 - `tailwind.config.js` - Tailwind CSS configuration
+
+## API Integration
+The project includes API integration for authentication:
+- Login: `{{base_url}}/api/login`
+- Registration: `{{base_url}}/api/register`
+
+Configure the API base URL in the `.env` file:
+```
+REACT_APP_API_BASE_URL=http://your-api-domain.com
+```
 
 ## Getting Started
 1. **Clone the repository:**
