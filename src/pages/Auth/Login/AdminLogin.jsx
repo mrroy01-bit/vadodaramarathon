@@ -1,14 +1,18 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate,Link } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { authService } from "../../../services/api";
+import { setAuthToken } from "../../../services/auth";
 
-export default function AmbassadorLogin() {
+export default function AdminLogin() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,19 +25,38 @@ export default function AmbassadorLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Call the login API
+      const response = await authService.login(formData);
+      
+      // Extract user role from the response
+      const { token, user } = response.data;
+      
+      // Store token
+      setAuthToken(token);
+      
+      // Redirect based on user role
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (user.role === 'brand') {
+        navigate('/brand/dashboard');
+      } else if (user.role === 'sponsor') {
+        navigate('/sponsor/dashboard');
+      }
+      
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
       setLoading(false);
-      // TODO: Handle login logic
-      console.log("Login submitted:", formData);
-    }, 1500);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden">
-        {/* Header with background */}
         <div className="bg-blue-600 py-6 px-8 text-center text-white relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -47,7 +70,7 @@ export default function AmbassadorLogin() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold tracking-wide">
-              Ambassador Login
+              Admin Login
             </h2>
             <p className="mt-1 text-blue-100">
               Welcome back to Vadodara Marathon
@@ -56,6 +79,11 @@ export default function AmbassadorLogin() {
         </div>
         
         <form className="px-8 py-6 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
           <div className="space-y-5">
             {/* Email Field */}
             <div className="relative">
@@ -186,13 +214,10 @@ export default function AmbassadorLogin() {
         
         {/* Footer */}
         <div className="px-8 py-4 bg-gray-50 border-t text-center">
-          <p className="text-sm text-gray-600">
+         <p className="mt-6 text-center text-gray-600">
             Don't have an account?{" "}
-            <Link
-              to="/ambassador-register"
-              className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
-            >
-              Register now
+            <Link to="/admin-register" className="text-blue-600 hover:text-blue-800 font-medium">
+              Register here
             </Link>
           </p>
         </div>

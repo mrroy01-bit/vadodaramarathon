@@ -48,10 +48,12 @@ import ArticlePage from './Component/Footer/ArticlePage';
 import UserLogin from './pages/Auth/Login/UserLogin';
 import UserRegister from './pages/Auth/Register/UserRegister';
 import PasswordForget from './pages/Auth/Login/PasswordForget';
-import AmbassadorLogin from './pages/Auth/Login/AmbassadorLogin';
-import AmbassadorRegister from './pages/Auth/Register/AmbassadorRegister';
-import Dashboard from './pages/Dashboard/Dashboard';
-
+import AdminLogin from './pages/Auth/Login/AdminLogin';
+import AdminRegister from './pages/Auth/Register/AdminRegister';
+import Dashboard from './pages/Dashboard/AdminDashboard';
+import BrandDashboard from './pages/Dashboard/BrandDashboard';
+import UserDashboard from './pages/Dashboard/UserDashbord';
+import SponsorsDashboard from './pages/Dashboard/SponsorDashboard';
 
 import { Route, Routes, Navigate } from 'react-router-dom';
 function App() {
@@ -120,9 +122,12 @@ function App() {
         <Route path="/register" element={<UserRegister />} />
         <Route path="/password-forget" element={<PasswordForget />} />
 
-        <Route path="/ambassador-login" element={<AmbassadorLogin />} />
-        <Route path="/ambassador-register" element={<AmbassadorRegister />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin-register" element={<AdminRegister />} />
+        <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/brand/dashboard" element={<BrandDashboard />} />
+        <Route path="/user/dashboard" element={<UserDashboard />} />
+        <Route path="/sponsors/dashboard" element={<SponsorsDashboard />} />
 
    </Routes>
   );

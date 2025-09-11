@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import { PhotoTab } from "./Tab/photo";
 import { BannerTab } from "./Tab/Banner";
-import { FaUserCircle, FaImages, FaImage } from "react-icons/fa";
+import { FaUserCircle, FaImage, } from "react-icons/fa";
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("photo");
+  const [activeTab, setActiveTab] = useState("banner");
   const user = {
-    name: "Admin User",
-    email: "admin@example.com",
+    name: "sponsors User",
+    email: "sponsors@example.com",
   };
 
   return (
@@ -19,17 +18,7 @@ export default function Dashboard() {
         </div>
         
         <div className="space-y-2">
-          <button
-            className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${
-              activeTab === "photo" 
-                ? "bg-blue-600 text-white shadow-md" 
-                : "hover:bg-blue-50 text-gray-700"
-            }`}
-            onClick={() => setActiveTab("photo")}
-          >
-            <FaImages className="text-lg" />
-            <span>Photo Gallery</span>
-          </button>
+         
           <button
             className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${
               activeTab === "banner" 
@@ -41,6 +30,7 @@ export default function Dashboard() {
             <FaImage className="text-lg" />
             <span>Banner Management</span>
           </button>
+        
         </div>
       </div>
 
@@ -49,7 +39,11 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-lg shadow-sm">
           <h1 className="text-2xl font-bold text-gray-800">
-            {activeTab === "photo" ? "Photo Gallery Management" : "Banner Management"}
+            {activeTab === "photo"
+              ? "Photo Gallery Management"
+              : activeTab === "banner"
+              ? "Banner Management"
+              : "User Management"}
           </h1>
           <div className="relative group">
             <div className="flex items-center gap-2 cursor-pointer p-2 rounded-full hover:bg-gray-100">
@@ -70,7 +64,8 @@ export default function Dashboard() {
         </div>
 
         {/* Dynamic Tab Content */}
-        {activeTab === "photo" ? <PhotoTab /> : <BannerTab />}
+        {activeTab === "banner" && <BannerTab />}
+       
       </div>
     </div>
   );

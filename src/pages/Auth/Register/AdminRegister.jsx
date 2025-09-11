@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaPhone, FaUserTag } from "react-icons/fa";
+import { authService } from "../../../services/api";
 
-export default function AmbassadorRegister() {
+export default function AdminRegister() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -16,12 +18,12 @@ export default function AmbassadorRegister() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState("");
 
   const roles = [
-    { id: "volunteer", label: "Volunteer" },
-    { id: "coordinator", label: "Coordinator" },
+    { id: "Admin", label: "Admin" },
+    { id: "Brand", label: "Brand" },
     { id: "sponsor", label: "Sponsor" },
-    { id: "media", label: "Media Partner" },
   ];
 
   const handleChange = (e) => {
@@ -31,7 +33,6 @@ export default function AmbassadorRegister() {
       [name]: value,
     });
     
-    // Clear error when field is edited
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -94,19 +95,57 @@ export default function AmbassadorRegister() {
     }
     
     setLoading(true);
+    setApiError("");
     
-    // Simulate API call
-    setTimeout(() => {
+    // Prepare data for API
+    const userData = {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      role: formData.role,
+      password: formData.password
+      // Confirm password is only for validation, not needed in API
+    };
+    
+    try {
+      // Make the API call
+      const response = await authService.register(userData);
+      
+      // Handle successful registration
+      console.log("Registration successful:", response);
+      
+      // Redirect to login page or dashboard based on response
+      if (formData.role === "Admin") {
+        navigate("/admin/login");
+      } else if (formData.role === "Brand") {
+        navigate("/brand/login");
+      } else if (formData.role === "sponsor") {
+        navigate("/sponsor/login");
+      } else {
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      
+      // Handle API error
+      if (error.field) {
+        // Field-specific error
+        setErrors({
+          ...errors,
+          [error.field]: error.message
+        });
+      } else {
+        // General API error
+        setApiError(error.message || "Registration failed. Please try again.");
+      }
+    } finally {
       setLoading(false);
-      // TODO: Handle registration logic
-      console.log("Registration submitted:", formData);
-    }, 1500);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-6 bg-white rounded-xl shadow-lg overflow-hidden">
-        {/* Header with background */}
         <div className="bg-blue-600 py-6 px-8 text-center text-white relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -120,15 +159,26 @@ export default function AmbassadorRegister() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold tracking-wide">
-              Ambassador Registration
+               Admin Registration
             </h2>
             <p className="mt-1 text-blue-100">
-              Join our team and be part of the Vadodara Marathon family
+              Register to manage the Vadodara Marathon platform
             </p>
           </div>
         </div>
         
         <form className="px-8 py-6 space-y-6" onSubmit={handleSubmit}>
+          {apiError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
+              <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{apiError}</span>
+              </div>
+            </div>
+          )}
+          
           <div className="space-y-5">
             {/* Name Field */}
             <div className="relative">
@@ -427,7 +477,7 @@ export default function AmbassadorRegister() {
                   Creating your account...
                 </>
               ) : (
-                <>Register as Ambassador</>
+                <>Register Account</>
               )}
             </button>
           </div>
@@ -438,7 +488,7 @@ export default function AmbassadorRegister() {
           <p className="text-sm text-gray-600">
             Already have an account?{" "}
             <Link
-              to="/ambassador-login"
+              to="/admin-login"
               className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
             >
               Sign in

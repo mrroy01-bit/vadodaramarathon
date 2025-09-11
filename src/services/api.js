@@ -72,3 +72,46 @@ export const authService = {
 };
 
 export default apiClient;
+
+// User services
+export const userService = {
+  // Fetch all users
+  getAllUsers: async () => {
+    try {
+      const response = await apiClient.get('/api/register/fetch-all-user');
+      return response.data;
+    } catch (error) {
+      throw error.response ? error.response.data : new Error('User service unavailable');
+    }
+  },
+  
+  // Get user profile
+  getUserProfile: async (userId) => {
+    try {
+      const response = await apiClient.get(`/api/register/user-profile${userId ? `/${userId}` : ''}`);
+      return response.data;
+    } catch (error) {
+      throw error.response ? error.response.data : new Error('User profile service unavailable');
+    }
+  },
+  
+  // Update user profile
+  updateUserProfile: async (userId, profileData) => {
+    try {
+      const response = await apiClient.put(`/api/register/user-profile/${userId}`, profileData);
+      return response.data;
+    } catch (error) {
+      throw error.response ? error.response.data : new Error('Update profile service unavailable');
+    }
+  },
+  
+  // Delete user
+  deleteUser: async (userId) => {
+    try {
+      const response = await apiClient.delete(`/api/register/user/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response ? error.response.data : new Error('Delete user service unavailable');
+    }
+  },
+};
