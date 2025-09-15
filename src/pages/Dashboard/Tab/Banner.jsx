@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaCloudUploadAlt, FaTrashAlt, FaImage, FaEye, FaUser, FaPhone, FaCalendarAlt, FaLink, FaEnvelope } from "react-icons/fa";
+import { heroImageService } from '../../../services/api';
 
 export function BannerTab() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -7,6 +8,8 @@ export function BannerTab() {
   const [bannerTitle, setBannerTitle] = useState("");
   const [bannerLocation, setBannerLocation] = useState("");
   const [bannerActive, setBannerActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   
   // Enhanced banners with uploader information
   const [banners, setBanners] = useState([
@@ -40,11 +43,44 @@ export function BannerTab() {
   const [selectedBanner, setSelectedBanner] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  const handleFileChange = (e) => {
+  // Fetch hero images when component mounts
+  useEffect(() => {
+    const fetchHeroImages = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await heroImageService.getHeroImage();
+        setBanners(data);
+      } catch (err) {
+        setError('Failed to fetch hero images');
+        console.error('Error fetching hero images:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchHeroImages();
+  }, []);
+
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
+      
+      try {
+        setIsLoading(true);
+        setError(null);
+        await heroImageService.updateHeroImage(file);
+        // Refresh the banners list after successful upload
+        const updatedData = await heroImageService.getHeroImage();
+        setBanners(updatedData);
+      } catch (err) {
+        setError('Failed to upload image');
+        console.error('Error uploading image:', err);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -102,6 +138,24 @@ export function BannerTab() {
 
   return (
     <div className="space-y-8">
+      {/* Error Alert */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline"> {error}</span>
+        </div>
+      )}
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg shadow-lg">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <p className="mt-2">Loading...</p>
+          </div>
+        </div>
+      )}
+
       {/* Upload Section */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="bg-blue-50 p-6 border-b">
@@ -188,9 +242,6 @@ export function BannerTab() {
                 >
                   <option value="">Select location</option>
                   <option value="home">Home Page</option>
-                  <option value="registration">Registration Page</option>
-                  <option value="results">Results Page</option>
-                  <option value="sponsors">Sponsors Page</option>
                 </select>
               </div>
               

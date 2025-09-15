@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../Component/Header";
 import Banner from "../assest/banner.jpg";
 import VideoCard from "../Component/VideoCard";
+import { heroImageService, raceCategoryService } from "../services/api";
 import SponsorSlider from "../Component/SponsorSlider";
 import ValuablePartners from "../Component/ValuedPartners";
 import ValuableAssociates from "../Component/ValuableAssociates";
@@ -13,7 +14,34 @@ import {
 } from "react-icons/fa";
 
 const LandingPage = () => {
-  const marathonCards = [
+  const [heroImage, setHeroImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [marathonCategories, setMarathonCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [heroData, categoriesData] = await Promise.all([
+          heroImageService.getHeroImage(),
+          raceCategoryService.getAllCategories()
+        ]);
+        setHeroImage(heroData);
+        setMarathonCategories(categoriesData);
+      } catch (err) {
+        setError('Failed to load data');
+        console.error('Error loading data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Default marathon cards will be used as fallback if API fails
+  const defaultMarathonCards = [
     { title: "Full Marathon (42.195kms)", img: "/images/marathon1.jpg" },
     { title: "Half Marathon (21.097kms)", img: "/images/marathon2.jpg" },
     { title: "10kms", img: "/images/marathon3.jpg" },
@@ -28,12 +56,31 @@ const LandingPage = () => {
 
       {/* Banner Section */}
       <div className="banner">
-        <div className="overlay">
-          <img
-            src={Banner}
-            alt="Banner"
-            className="w-full h-auto object-cover"
-          />
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 text-sm" role="alert">
+            {error}
+          </div>
+        )}
+        <div className="overlay relative">
+          {isLoading ? (
+            <div className="w-full h-64 bg-gray-200 animate-pulse flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            </div>
+          ) : error ? (
+            <div className="w-full h-64 bg-red-100 flex items-center justify-center">
+              <img
+                src={Banner}
+                alt="Fallback Banner"
+                className="w-full h-auto object-cover"
+              />
+            </div>
+          ) : (
+            <img
+              src={heroImage?.image || Banner}
+              alt="Banner"
+              className="w-full h-auto object-cover"
+            />
+          )}
         </div>
         <div className="btn-reg flex flex-col sm:flex-row justify-between items-center gap-4 p-6 bg-[#F2F2F2] text-center">
           <h2 className="text-2xl sm:text-4xl font-bold text-[#542F78]">
@@ -104,21 +151,36 @@ const LandingPage = () => {
 
       {/* Marathon Cards Section */}
       <section className="bg-white px-4 py-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {marathonCards.map((card, i) => (
-            <div
-              key={i}
-              className="relative h-64 bg-cover bg-center rounded shadow-md"
-              style={{ backgroundImage: `url('${card.img}')` }}
-            >
-              <div className="absolute inset-0 bg-black/40 flex items-end justify-center p-4">
-                <h3 className="text-white text-lg sm:text-xl font-semibold text-center">
-                  {card.title}
-                </h3>
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[300px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-800"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-600 py-8">
+            {error}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {(marathonCategories.length > 0 ? marathonCategories : defaultMarathonCards).map((card, i) => (
+              <div
+                key={i}
+                className="relative h-64 bg-cover bg-center rounded shadow-md"
+                style={{ backgroundImage: `url('${card.image || card.img}')` }}
+              >
+                <div className="absolute inset-0 bg-black/40 flex items-end justify-center p-4">
+                  <h3 className="text-white text-lg sm:text-xl font-semibold text-center">
+                    {card.title}
+                  </h3>
+                  {card.description && (
+                    <p className="text-white text-sm mt-2 opacity-80">
+                      {card.description}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <SponsorSlider />

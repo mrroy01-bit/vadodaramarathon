@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { FaCloudUploadAlt, FaTrashAlt, FaImage, FaUser, FaPhone, FaEye, FaDownload, FaEllipsisH, FaEnvelope } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { FaCloudUploadAlt, FaTrashAlt, FaImage, FaUser, FaEye, FaDownload, FaSpinner } from "react-icons/fa";
+import { raceCategoryService } from "../../../services/api";
 
 export function PhotoTab() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -7,41 +8,61 @@ export function PhotoTab() {
   const [viewMode, setViewMode] = useState("upload"); // "upload" or "gallery"
   const [photoTitle, setPhotoTitle] = useState("");
   const [photoDescription, setPhotoDescription] = useState("");
+  const [photoLocation, setPhotoLocation] = useState("");
+  const [pageType, setPageType] = useState("");
   
-  // Sample uploaded photos data
-  const [uploadedPhotos, setUploadedPhotos] = useState([
-    {
-      id: 1,
-      title: "Marathon Start Line",
-      description: "Participants at the starting point of the marathon",
-      imageUrl: "/src/assest/img_1.jpg",
-      uploadDate: "2025-08-01",
-      uploader: {
-        name: "Raj Patel",
+  // Race category states
+  const [raceCategories, setRaceCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Fetch race categories on component mount
+  useEffect(() => {
+    const fetchRaceCategories = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await raceCategoryService.getAllCategories();
+        setRaceCategories(response);
+      } catch (err) {
+        setError('Failed to fetch race categories');
+        console.error('Error fetching race categories:', err);
+      } finally {
+        setIsLoading(false);
       }
-    },
-    {
-      id: 2,
-      title: "Medal Ceremony",
-      description: "Winners receiving medals after completion",
-      imageUrl: "/src/assest/img_3.jpg",
-      uploadDate: "2025-08-02",
-      uploader: {
-        name: "Priya Sharma",
-      }
-    },
-    {
-      id: 3,
-      title: "Volunteer Team",
-      description: "Dedicated volunteers helping at water station",
-      imageUrl: "/src/assest/img_5.jpg",
-      uploadDate: "2025-08-03",
-      uploader: {
-        name: "Amit Singh",
-        
-      }
+    };
+
+    if (pageType === 'home') {
+      fetchRaceCategories();
     }
-  ]);
+  }, [pageType]);
+
+  // Fetch photos when component mounts
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      setIsLoadingPhotos(true);
+      setPhotoError(null);
+      try {
+        const response = await raceCategoryService.getAllCategories();
+        setUploadedPhotos(response);
+        setTotalPhotos(response.length);
+      } catch (err) {
+        setPhotoError('Failed to fetch photos');
+        console.error('Error fetching photos:', err);
+      } finally {
+        setIsLoadingPhotos(false);
+      }
+    };
+
+    fetchPhotos();
+  }, []);
+
+  // Photos state and loading states
+  const [uploadedPhotos, setUploadedPhotos] = useState([]);
+  const [isLoadingPhotos, setIsLoadingPhotos] = useState(false);
+  const [photoError, setPhotoError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPhotos, setTotalPhotos] = useState(0);
   
   // State for photo detail modal
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -60,27 +81,59 @@ export function PhotoTab() {
     setPreviewUrl(null);
     setPhotoTitle("");
     setPhotoDescription("");
+    setPhotoLocation("");
+    setPageType("");
   };
   
-  const handleUpload = () => {
-    if (!selectedFile) return;
+  const handleUpload = async () => {
+    if (!selectedFile || !photoLocation) {
+      alert("Please select a file and location for the photo");
+      return;
+    }
     
-    // Simulate upload
-    const newPhoto = {
-      id: uploadedPhotos.length + 1,
-      title: photoTitle || "Untitled Photo",
-      description: photoDescription || "",
-      imageUrl: previewUrl,
-      uploadDate: new Date().toISOString().split('T')[0],
-      uploader: {
-        name: "Admin User", // Would come from authentication
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const categoryData = {
+        title: photoTitle || "Untitled Photo",
+        description: photoDescription || "",
+        image: selectedFile,
+        location: photoLocation
+      };
+
+      if (pageType === 'home') {
+        // Create new race category
+        await raceCategoryService.createCategory(categoryData);
+        // Refresh race categories
+        const updatedCategories = await raceCategoryService.getAllCategories();
+        setRaceCategories(updatedCategories);
+        handleReset();
+        setViewMode("gallery");
+      } else {
+        // Handle regular photo upload
+        const newPhoto = {
+          id: uploadedPhotos.length + 1,
+          title: photoTitle || "Untitled Photo",
+          description: photoDescription || "",
+          imageUrl: previewUrl,
+          location: photoLocation,
+          uploadDate: new Date().toISOString().split('T')[0],
+          uploader: {
+            name: "Admin User", // Would come from authentication
+          }
+        };
         
+        setUploadedPhotos([newPhoto, ...uploadedPhotos]);
+        handleReset();
+        setViewMode("gallery");
       }
-    };
-    
-    setUploadedPhotos([newPhoto, ...uploadedPhotos]);
-    handleReset();
-    setViewMode("gallery");
+    } catch (err) {
+      setError('Failed to upload photo');
+      console.error('Error uploading photo:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const openPhotoDetails = (photo) => {
@@ -92,10 +145,19 @@ export function PhotoTab() {
     setShowModal(false);
   };
   
-  const deletePhoto = (photoId) => {
-    setUploadedPhotos(uploadedPhotos.filter(photo => photo.id !== photoId));
-    if (selectedPhoto && selectedPhoto.id === photoId) {
-      closePhotoDetails();
+  const deletePhoto = async (photoId) => {
+    try {
+      setIsLoadingPhotos(true);
+      await raceCategoryService.deleteCategory(photoId);
+      setUploadedPhotos(uploadedPhotos.filter(photo => photo.id !== photoId));
+      if (selectedPhoto && selectedPhoto.id === photoId) {
+        closePhotoDetails();
+      }
+    } catch (err) {
+      setPhotoError('Failed to delete photo');
+      console.error('Error deleting photo:', err);
+    } finally {
+      setIsLoadingPhotos(false);
     }
   };
 
@@ -136,6 +198,23 @@ export function PhotoTab() {
           {/* Content */}
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Error and Loading States */}
+              {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                  <strong className="font-bold">Error!</strong>
+                  <span className="block sm:inline"> {error}</span>
+                </div>
+              )}
+              
+              {isLoading && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white p-4 rounded-lg shadow-lg">
+                    <FaSpinner className="animate-spin h-8 w-8 text-blue-600" />
+                    <p className="mt-2">Processing upload...</p>
+                  </div>
+                </div>
+              )}
+
               {/* Upload Area */}
               <div className="space-y-6">
                 <div 
@@ -204,15 +283,50 @@ export function PhotoTab() {
                   />
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Description (Optional)</label>
-                  <textarea 
-                    value={photoDescription}
-                    onChange={(e) => setPhotoDescription(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                    placeholder="Add a short description"
-                    rows="3"
-                  ></textarea>
+                <div className="space-y-4">
+                  {/* Page Selection */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Page Type</label>
+                    <select
+                      value={pageType}
+                      onChange={(e) => {
+                        setPageType(e.target.value);
+                        setPhotoLocation(""); // Reset location when page type changes
+                      }}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select a page</option>
+                      <option value="home">Home Page</option>
+                      <option value="other">Other Pages</option>
+                    </select>
+                  </div>
+
+                  {/* Location Selection - Changes based on page type */}
+                  {pageType && (
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">Photo Section</label>
+                      <select
+                        value={photoLocation}
+                        onChange={(e) => setPhotoLocation(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select a section</option>
+                        {pageType === "home" ? (
+                          <>
+                            <option value="Race Category">Race Category</option>
+                            <option value="Event Highlights">Valued Sponsors</option>
+                            <option value="Winners">Valued Partners</option>
+                          </>
+                        ) : (
+                          <>
+                            <option value="Gallery">Gallery</option>
+                            <option value="About">About</option>
+                            <option value="Teams">Teams</option>
+                          </>
+                        )}
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -249,7 +363,19 @@ export function PhotoTab() {
 
           {/* Gallery Content */}
           <div className="p-6">
-            {uploadedPhotos.length === 0 ? (
+            {photoError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+                <strong className="font-bold">Error!</strong>
+                <span className="block sm:inline"> {photoError}</span>
+              </div>
+            )}
+
+            {isLoadingPhotos ? (
+              <div className="flex justify-center items-center py-12">
+                <FaSpinner className="animate-spin h-8 w-8 text-blue-600" />
+                <span className="ml-2">Loading photos...</span>
+              </div>
+            ) : uploadedPhotos.length === 0 ? (
               <div className="text-center py-12">
                 <FaImage className="mx-auto text-gray-300 text-5xl mb-4" />
                 <h3 className="text-lg font-medium text-gray-900">No photos uploaded yet</h3>
