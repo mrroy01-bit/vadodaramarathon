@@ -25,7 +25,7 @@ const UserLogin = () => {
       const response = await authService.login(formData);
       console.log('Login successful:', response);
       // Redirect to dashboard or home page after successful login
-      navigate('/user-dashboard');
+      navigate('/user/dashboard');
     } catch (err) {
       console.error('Login error:', err);
       setError(err.message || 'Invalid email or password. Please try again.');

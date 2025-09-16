@@ -1,17 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PhotoTab } from "./Tab/photo";
 import { BannerTab } from "./Tab/Banner";
-import { FaUserCircle, FaImages, FaImage, FaUsers, FaUserPlus } from "react-icons/fa";
+import { FaUserCircle, FaImages, FaImage, FaUsers, FaUserPlus, FaSpinner } from "react-icons/fa";
 import AllUser from "./Tab/allUser";
 import AddNewuser from "./Tab/addNewuser";
+import { userProfileService } from "../../services/api";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("photo");
   const [userTab, setUserTab] = useState("all");
-  const user = {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [adminProfile, setAdminProfile] = useState({
     name: "Admin User",
     email: "admin@example.com",
-  };
+  });
+
+  useEffect(() => {
+    const fetchAdminProfile = async () => {
+      setLoading(true);
+      try {
+        const response = await userProfileService.getUserProfile();
+        if (response) {
+          setAdminProfile({
+            name: `${response.firstName} ${response.lastName}`,
+            email: response.email,
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching admin profile:", err);
+        setError(err.response?.data?.message || "Failed to load admin profile");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdminProfile();
+  }, []);
 
   return (
     <div className="min-h-screen flex bg-gray-50">
@@ -72,15 +97,31 @@ export default function Dashboard() {
           <div className="relative group">
             <div className="flex items-center gap-2 cursor-pointer p-2 rounded-full hover:bg-gray-100">
               <FaUserCircle className="w-8 h-8 text-blue-600" />
-              <span className="font-medium text-gray-700">{user.name}</span>
+              {loading ? (
+                <FaSpinner className="w-5 h-5 animate-spin text-blue-600" />
+              ) : error ? (
+                <span className="font-medium text-red-600">Error loading profile</span>
+              ) : (
+                <span className="font-medium text-gray-700">{adminProfile.name}</span>
+              )}
             </div>
             <div className="absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-xl p-4 hidden group-hover:block z-10">
               <div className="flex flex-col items-center mb-3 pb-3 border-b">
                 <FaUserCircle className="w-16 h-16 text-blue-600 mb-2" />
-                <p className="text-sm font-medium">{user.name}</p>
-                <p className="text-xs text-gray-600">{user.email}</p>
+                <p className="text-sm font-medium">{adminProfile.name}</p>
+                <p className="text-xs text-gray-600">{adminProfile.email}</p>
+                {error && (
+                  <p className="text-xs text-red-500 mt-1">{error}</p>
+                )}
               </div>
-              <button className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded">
+              <button 
+                className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded"
+                onClick={() => {
+                  // Add logout logic here
+                  localStorage.removeItem('userProfile');
+                  // Redirect to login page or handle logout
+                }}
+              >
                 Sign Out
               </button>
             </div>

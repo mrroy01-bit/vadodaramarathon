@@ -17,38 +17,53 @@ export default function RegisterForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Reset error state
     setError("");
-    
-    // Check if passwords match
+
+    // password check
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match!");
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
-      // Remove confirmPassword before sending to API
-      const { confirmPassword, ...registrationData } = formData;
-      
+      // map frontend → backend format
+      const registrationData = {
+        fname: formData.firstName,
+        lname: formData.lastName,
+        phone_number: formData.phone,
+        email: formData.email,
+        dob: formData.dob, // ✅ keep YYYY-MM-DD
+        gender:
+          formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1), // "Male"
+        password: formData.password,
+        confirm_password: formData.confirmPassword,
+        role: "USER", 
+      };
+
+      console.log("Submitting data:", registrationData);
+
       const response = await authService.register(registrationData);
       console.log("Registration successful:", response);
-      
-      // Redirect to login page after successful registration
-      alert("Registration successful! Please login with your credentials.");
+
       navigate("/login");
     } catch (err) {
       console.error("Registration error:", err);
-      setError(err.message || "Registration failed. Please try again.");
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Registration failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -57,14 +72,17 @@ export default function RegisterForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-[90vh] border border-gray-200">
-       
-        
-        <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Create Your Account</h2>
-        
+        <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+          Create Your Account
+        </h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* First and Last Name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 font-medium mb-2">First Name</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                First Name
+              </label>
               <input
                 type="text"
                 name="firstName"
@@ -77,7 +95,9 @@ export default function RegisterForm() {
             </div>
 
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Last Name</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Last Name
+              </label>
               <input
                 type="text"
                 name="lastName"
@@ -90,9 +110,12 @@ export default function RegisterForm() {
             </div>
           </div>
 
+          {/* Phone and Email */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Phone Number</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Phone Number
+              </label>
               <input
                 type="tel"
                 name="phone"
@@ -106,7 +129,9 @@ export default function RegisterForm() {
             </div>
 
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Email Address</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Email Address
+              </label>
               <input
                 type="email"
                 name="email"
@@ -119,9 +144,12 @@ export default function RegisterForm() {
             </div>
           </div>
 
+          {/* DOB and Gender */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Date of Birth</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Date of Birth
+              </label>
               <input
                 type="date"
                 name="dob"
@@ -133,7 +161,9 @@ export default function RegisterForm() {
             </div>
 
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Gender</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Gender
+              </label>
               <select
                 name="gender"
                 required
@@ -149,9 +179,12 @@ export default function RegisterForm() {
             </div>
           </div>
 
+          {/* Passwords */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Password</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Password
+              </label>
               <input
                 type="password"
                 name="password"
@@ -165,7 +198,9 @@ export default function RegisterForm() {
             </div>
 
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Confirm Password</label>
+              <label className="block text-gray-700 font-medium mb-2">
+                Confirm Password
+              </label>
               <input
                 type="password"
                 name="confirmPassword"
@@ -179,28 +214,34 @@ export default function RegisterForm() {
             </div>
           </div>
 
+          {/* Error message */}
           {error && (
             <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
               {error}
             </div>
           )}
 
+          {/* Submit button */}
           <div className="mt-8">
             <button
               type="submit"
               disabled={loading}
               className={`w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
-                loading ? 'opacity-70 cursor-not-allowed' : ''
+                loading ? "opacity-70 cursor-not-allowed" : ""
               }`}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </div>
-          
+
+          {/* Already have account */}
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Already have an account?{" "}
-              <Link to="/login" className="text-blue-600 hover:text-blue-800 font-medium">
+              <Link
+                to="/login"
+                className="text-blue-600 hover:text-blue-800 font-medium"
+              >
                 Login here
               </Link>
             </p>

@@ -44,11 +44,16 @@ export function PhotoTab() {
       setPhotoError(null);
       try {
         const response = await raceCategoryService.getAllCategories();
-        setUploadedPhotos(response);
-        setTotalPhotos(response.length);
+        // Ensure we have an array, even if empty
+        const photosArray = Array.isArray(response) ? response : [];
+        setUploadedPhotos(photosArray);
+        setTotalPhotos(photosArray.length);
       } catch (err) {
         setPhotoError('Failed to fetch photos');
         console.error('Error fetching photos:', err);
+        // Set empty array on error to prevent mapping issues
+        setUploadedPhotos([]);
+        setTotalPhotos(0);
       } finally {
         setIsLoadingPhotos(false);
       }

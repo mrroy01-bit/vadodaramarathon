@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { useNavigate,Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import { authService } from "../../../services/api";
+import { authService, userProfileService } from "../../../services/api";
 import { setAuthToken } from "../../../services/auth";
 
 export default function AdminLogin() {
@@ -9,6 +9,8 @@ export default function AdminLogin() {
     email: "",
     password: "",
   });
+
+  const [userData, setUserData] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -26,29 +28,38 @@ export default function AdminLogin() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+
     try {
-      // Call the login API
+      // 1. Call login API
       const response = await authService.login(formData);
-      
-      // Extract user role from the response
-      const { token, user } = response.data;
-      
-      // Store token
+      const { token } = response;
+
+      // 2. Save token
       setAuthToken(token);
-      
-      // Redirect based on user role
-      if (user.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else if (user.role === 'brand') {
-        navigate('/brand/dashboard');
-      } else if (user.role === 'sponsor') {
-        navigate('/sponsor/dashboard');
+
+      // 3. Fetch user profile
+      const profileResponse = await userProfileService.getUserProfile();
+      const user = profileResponse.data;
+
+      // 4. Set user data
+      setUserData(user);
+      const userRole = user.role.toLowerCase();
+      // 5. Redirect based on role
+      if (userRole === "admin") {
+        navigate("/admin/dashboard");
+      } else if (userRole === "user") {
+        navigate("/user/dashboard");
+      }else if(userRole === "brand"){
+navigate("/brand/dashboard");
+      } else {
+        setError("Invalid role: " + userRole);
       }
-      
     } catch (err) {
-      console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      console.error("Login error:", err);
+      setError(
+        err.response?.data?.message ||
+          "Login failed. Please check your credentials."
+      );
     } finally {
       setLoading(false);
     }
@@ -57,27 +68,45 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden">
+        {/* Header */}
         <div className="bg-blue-600 py-6 px-8 text-center text-white relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
-            <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10,30 C30,10 70,10 90,30 C110,50 110,80 90,100 C70,120 30,120 10,100 C-10,80 -10,50 10,30 Z" fill="currentColor"></path>
+            <svg
+              className="w-full h-full"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M10,30 C30,10 70,10 90,30 C110,50 110,80 90,100 C70,120 30,120 10,100 C-10,80 -10,50 10,30 Z"
+                fill="currentColor"
+              ></path>
             </svg>
           </div>
           <div className="relative z-10">
             <div className="inline-flex justify-center items-center bg-white p-3 rounded-full mb-3 shadow-md">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-blue-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold tracking-wide">
-              Admin Login
-            </h2>
+            <h2 className="text-2xl font-bold tracking-wide">Admin Login</h2>
             <p className="mt-1 text-blue-100">
               Welcome back to Vadodara Marathon
             </p>
           </div>
         </div>
-        
+
+        {/* Form */}
         <form className="px-8 py-6 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
@@ -85,9 +114,12 @@ export default function AdminLogin() {
             </div>
           )}
           <div className="space-y-5">
-            {/* Email Field */}
+            {/* Email */}
             <div className="relative">
-              <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+              <label
+                htmlFor="email-address"
+                className="block text-sm font-medium text-gray-700 mb-1 ml-1"
+              >
                 Email Address
               </label>
               <div className="relative rounded-md shadow-sm">
@@ -108,9 +140,12 @@ export default function AdminLogin() {
               </div>
             </div>
 
-            {/* Password Field */}
+            {/* Password */}
             <div className="relative">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1 ml-1"
+              >
                 Password
               </label>
               <div className="relative rounded-md shadow-sm">
@@ -145,6 +180,7 @@ export default function AdminLogin() {
             </div>
           </div>
 
+          {/* Remember + Forgot */}
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
@@ -171,14 +207,13 @@ export default function AdminLogin() {
             </div>
           </div>
 
+          {/* Submit */}
           <div>
             <button
               type="submit"
               disabled={loading}
               className={`relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white ${
-                loading 
-                  ? "bg-blue-400" 
-                  : "bg-blue-600 hover:bg-blue-700"
+                loading ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"
               } shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors`}
             >
               {loading ? (
@@ -211,18 +246,21 @@ export default function AdminLogin() {
             </button>
           </div>
         </form>
-        
+
         {/* Footer */}
         <div className="px-8 py-4 bg-gray-50 border-t text-center">
-         <p className="mt-6 text-center text-gray-600">
+          <p className="mt-6 text-center text-gray-600">
             Don't have an account?{" "}
-            <Link to="/admin-register" className="text-blue-600 hover:text-blue-800 font-medium">
+            <Link
+              to="/admin-register"
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
               Register here
             </Link>
           </p>
         </div>
       </div>
-      
+
       {/* Decorative Elements */}
       <div className="hidden lg:block absolute top-0 right-0 mt-32 mr-20">
         <div className="w-32 h-32 bg-blue-200 rounded-full opacity-20"></div>

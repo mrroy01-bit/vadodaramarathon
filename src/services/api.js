@@ -2,7 +2,7 @@ import axios from 'axios';
 import { setAuthToken, getAuthHeader } from './auth';
 
 // Base URL for API calls - you'll need to set this in your environment variables or config
-const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://13.235.254.156:4000';
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -147,24 +147,161 @@ export const heroImageService = {
   },
 };
 
+// User Profile services
+export const userProfileService = {
+  // Get user profile
+  getUserProfile: async () => {
+    try {
+      const response = await apiClient.get('/api/register/user-profile');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Update user profile
+  updateUserProfile: async (profileData) => {
+    try {
+      const response = await apiClient.put('/api/register/update-profile', profileData);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+};
+
 // Authentication services
 export const authService = {
   // Login user
   login: async (credentials) => {
     try {
-      const response = await apiClient.post('/api/login', credentials);
-      
-      // Store token in localStorage if login is successful
-      if (response.data.token) {
-        setAuthToken(response.data.token);
+      // Validate input
+      if (!credentials.email || !credentials.password) {
+        throw new Error('Email and password are required');
+      }
+
+      // Try both endpoints
+      let response;
+      try {
+        response = await apiClient.post('/api/login', credentials);
+      } catch (firstError) {
+        console.log('First endpoint failed, trying fallback endpoint...');
+        response = await apiClient.post('/api/login', credentials);
       }
       
-      return response.data;
+      // Debug log
+      console.log('API Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+        data: response.data
+      });
+      
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+
+      // Handle both possible response structures
+      const responseData = response.data.data || response.data;
+      
+      // Debug logs
+      console.log('Full response data:', response.data);
+      console.log('Processed response data:', responseData);
+      
+      // Validate response structure
+      if (!responseData.token) {
+        throw new Error('No token in response');
+      }
+
+      // Store token
+      setAuthToken(responseData.token);
+      
+      // Extract user data from the response
+      let userData;
+      
+      if (responseData.user) {
+        // If user data is directly in the response
+        userData = responseData.user;
+      } else if (responseData.userData) {
+        // Alternative field name
+        userData = responseData.userData;
+      } else {
+        // Try to decode the token
+        try {
+          const base64Url = responseData.token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          userData = JSON.parse(window.atob(base64));
+          console.log('Decoded token payload:', userData);
+        } catch (error) {
+          console.error('Token parsing error:', error);
+        }
+      }
+
+      // If we still don't have user data, look for it in other possible response locations
+      if (!userData) {
+        userData = responseData.data || responseData;
+      }
+
+      console.log('Final user data:', userData);
+      
+      // Store the user data we found
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      return { ...responseData, user: userData };
     } catch (error) {
-      throw error.response ? error.response.data : new Error('Login service unavailable');
+      console.error('Login service error:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        throw error.response.data;
+      }
+      throw new Error(error.message || 'Login service unavailable');
     }
   },
   
+  // Get user details by ID
+  getUserDetails: async (userId) => {
+    try {
+      // Try to get specific user first
+      try {
+        const response = await apiClient.get(`/api/register/user/${userId}`);
+        console.log('Single user response:', response.data);
+        if (response.data && (response.data.user || response.data.data)) {
+          const user = response.data.user || response.data.data;
+          return { user };
+        }
+      } catch (e) {
+        console.log('Single user fetch failed, trying all users');
+      }
+
+      // Fallback: get all users and find the specific one
+      const response = await apiClient.get('/api/register/fetch-all-user');
+      console.log('All users response:', response.data);
+      
+      // Find the specific user by ID
+      const users = response.data.data || response.data;
+      if (!Array.isArray(users)) {
+        throw new Error('Invalid users data received');
+      }
+
+      const userDetails = users.find(user => user._id === userId);
+      console.log('Found user details:', userDetails);
+      
+      if (!userDetails) {
+        throw new Error('User not found');
+      }
+
+      if (!userDetails.role) {
+        throw new Error('User role not found in user details');
+      }
+
+      return { user: userDetails };
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      throw error.response?.data || error;
+    }
+  },
+
+
   // Register user
   register: async (userData) => {
     try {
