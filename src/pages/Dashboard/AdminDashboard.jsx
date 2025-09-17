@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {PhotoTab}  from "./Tab/photo";
+import {RaceTab}  from "./Tab/RaceCategory";
 import  BannerTab  from "./Tab/Banner";
 import { FaUserCircle, FaImages, FaImage, FaUsers, FaUserPlus, FaSpinner } from "react-icons/fa";
 import AllUser from "./Tab/allUser";
@@ -7,7 +7,7 @@ import AddNewuser from "./Tab/addNewuser";
 import { userService } from "../../services/api";
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("photo");
+  const [activeTab, setActiveTab] = useState("race");
   const [userTab, setUserTab] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -71,7 +71,7 @@ export default function Dashboard() {
                 ? "bg-blue-600 text-white shadow-md" 
                 : "hover:bg-blue-50 text-gray-700"
             }`}
-            onClick={() => setActiveTab("photo")}
+            onClick={() => setActiveTab("race")}
           >
             <FaImages className="text-lg" />
             <span>Photo Gallery</span>
@@ -159,7 +159,7 @@ export default function Dashboard() {
         </div>
 
         {/* Dynamic Tab Content */}
-        {activeTab === "photo" && <PhotoTab />}
+        {activeTab === "race" && <RaceTab />}
         {activeTab === "banner" && <BannerTab />}
         {activeTab === "user" && (
           <div>

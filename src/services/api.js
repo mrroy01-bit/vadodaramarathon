@@ -6,10 +6,8 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://13.235.254.156:40
 
 // Create axios instance with default config
 const apiClient = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: BASE_URL
+ 
 });
 
 // Add request interceptor to attach auth token to requests
@@ -62,15 +60,22 @@ export const raceCategoryService = {
   // Create new race category
   createCategory: async (categoryData) => {
     try {
-      const formData = new FormData();
-      // Add image if provided
-      if (categoryData.image) {
-        formData.append('image', categoryData.image);
+      let formData;
+
+      if (categoryData instanceof FormData) {
+        formData = categoryData;
+      } else {
+        formData = new FormData();
+        if (categoryData.file || categoryData.image) {
+          formData.append('image', categoryData.file || categoryData.image); // ✅ ensure 'image'
+        }
+        if (categoryData.category_name || categoryData.title) {
+          formData.append('category_name', categoryData.category_name || categoryData.title);
+        }
+        if (categoryData.description) {
+          formData.append('description', categoryData.description);
+        }
       }
-      // Add other category data
-      formData.append('title', categoryData.title);
-      formData.append('description', categoryData.description);
-      formData.append('location', categoryData.location);
 
       const response = await apiClient.post('/api/race-category', formData, {
         headers: {
@@ -87,14 +92,12 @@ export const raceCategoryService = {
   updateCategory: async (id, categoryData) => {
     try {
       const formData = new FormData();
-      // Add image if provided
-      if (categoryData.image) {
-        formData.append('image', categoryData.image);
+      if (categoryData.file || categoryData.image) {
+        formData.append('image', categoryData.file || categoryData.image); // ✅ ensure 'image'
       }
-      // Add other category data
-      formData.append('title', categoryData.title);
-      formData.append('description', categoryData.description);
-      formData.append('location', categoryData.location);
+      if (categoryData.title) formData.append('title', categoryData.title);
+      if (categoryData.description) formData.append('description', categoryData.description);
+      if (categoryData.location) formData.append('location', categoryData.location);
 
       const response = await apiClient.put(`/api/race-category/update/${id}`, formData, {
         headers: {
@@ -117,6 +120,7 @@ export const raceCategoryService = {
     }
   },
 };
+
 
 // Hero Image services
 // Hero Image services
