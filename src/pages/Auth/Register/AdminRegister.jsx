@@ -26,12 +26,7 @@ export default function AdminRegister() {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
 
-  const roles = [
-    { id: "Admin", label: "Admin" },
-    { id: "Brand", label: "Brand" },
-    { id: "Sponsor", label: "Sponsor" },
-    { id: "User", label: "User" },
-  ];
+ 
 
   const genders = [
     { id: "male", label: "Male" },
@@ -269,11 +264,10 @@ export default function AdminRegister() {
               onChange={handleChange}
             >
               <option value="">Select Role</option>
-              {roles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.label}
-                </option>
-              ))}
+              <option value="Admin">Admin</option>
+              <option value="Brand">Brand</option>
+              <option value="Sponsor">Sponsor</option>
+              <option value="User">User</option>
             </select>
             {errors.role && (
               <p className="text-red-500 text-sm">{errors.role}</p>

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { FaCloudUploadAlt, FaTrashAlt, FaImage, FaUser, FaEye, FaDownload, FaSpinner } from "react-icons/fa";
 import { raceCategoryService } from "../../../services/api";
 
 export function PhotoTab() {
+  // --- Consolidated State ---
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [viewMode, setViewMode] = useState("upload"); // "upload" or "gallery"
@@ -10,68 +11,37 @@ export function PhotoTab() {
   const [photoDescription, setPhotoDescription] = useState("");
   const [photoLocation, setPhotoLocation] = useState("");
   const [pageType, setPageType] = useState("");
-  
-  // Race category states
-  const [raceCategories, setRaceCategories] = useState([]);
+
+  const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-  // Fetch race categories on component mount
-  useEffect(() => {
-    const fetchRaceCategories = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await raceCategoryService.getAllCategories();
-        setRaceCategories(response);
-      } catch (err) {
-        setError('Failed to fetch race categories');
-        console.error('Error fetching race categories:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
-    if (pageType === 'home') {
-      fetchRaceCategories();
-    }
-  }, [pageType]);
-
-  // Fetch photos when component mounts
-  useEffect(() => {
-    const fetchPhotos = async () => {
-      setIsLoadingPhotos(true);
-      setPhotoError(null);
-      try {
-        const response = await raceCategoryService.getAllCategories();
-        // Ensure we have an array, even if empty
-        const photosArray = Array.isArray(response) ? response : [];
-        setUploadedPhotos(photosArray);
-        setTotalPhotos(photosArray.length);
-      } catch (err) {
-        setPhotoError('Failed to fetch photos');
-        console.error('Error fetching photos:', err);
-        // Set empty array on error to prevent mapping issues
-        setUploadedPhotos([]);
-        setTotalPhotos(0);
-      } finally {
-        setIsLoadingPhotos(false);
-      }
-    };
-
-    fetchPhotos();
-  }, []);
-
-  // Photos state and loading states
-  const [uploadedPhotos, setUploadedPhotos] = useState([]);
-  const [isLoadingPhotos, setIsLoadingPhotos] = useState(false);
-  const [photoError, setPhotoError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPhotos, setTotalPhotos] = useState(0);
-  
-  // State for photo detail modal
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  // --- Refactored Data Fetching ---
+  const fetchGalleryPhotos = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await raceCategoryService.getAllCategories();
+      // Ensure the response is always an array
+      const photosArray = Array.isArray(response) ? response : response?.data || [];
+      setGalleryPhotos(photosArray);
+    } catch (err) {
+      setError('Failed to fetch photos from the gallery.');
+      console.error('Error fetching photos:', err);
+      setGalleryPhotos([]); // Set to empty array on error to prevent crashes
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Fetch photos once when the component mounts
+  useEffect(() => {
+    fetchGalleryPhotos();
+  }, [fetchGalleryPhotos]);
+
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -92,7 +62,7 @@ export function PhotoTab() {
   
   const handleUpload = async () => {
     if (!selectedFile || !photoLocation) {
-      alert("Please select a file and location for the photo");
+      alert("Please select a file and a location for the photo.");
       return;
     }
     
@@ -107,34 +77,16 @@ export function PhotoTab() {
         location: photoLocation
       };
 
-      if (pageType === 'home') {
-        // Create new race category
-        await raceCategoryService.createCategory(categoryData);
-        // Refresh race categories
-        const updatedCategories = await raceCategoryService.getAllCategories();
-        setRaceCategories(updatedCategories);
-        handleReset();
-        setViewMode("gallery");
-      } else {
-        // Handle regular photo upload
-        const newPhoto = {
-          id: uploadedPhotos.length + 1,
-          title: photoTitle || "Untitled Photo",
-          description: photoDescription || "",
-          imageUrl: previewUrl,
-          location: photoLocation,
-          uploadDate: new Date().toISOString().split('T')[0],
-          uploader: {
-            name: "Admin User", // Would come from authentication
-          }
-        };
-        
-        setUploadedPhotos([newPhoto, ...uploadedPhotos]);
-        handleReset();
-        setViewMode("gallery");
-      }
+      // All uploads now go through the same API service
+      await raceCategoryService.createCategory(categoryData);
+      
+      // After upload, reset the form, refresh the gallery, and switch to gallery view
+      handleReset();
+      await fetchGalleryPhotos();
+      setViewMode("gallery");
+
     } catch (err) {
-      setError('Failed to upload photo');
+      setError('Failed to upload photo. Please try again.');
       console.error('Error uploading photo:', err);
     } finally {
       setIsLoading(false);
@@ -151,18 +103,20 @@ export function PhotoTab() {
   };
   
   const deletePhoto = async (photoId) => {
+    // Optimistically remove the photo from the UI for a faster user experience
+    setGalleryPhotos(prevPhotos => prevPhotos.filter(photo => photo._id !== photoId));
+    if (selectedPhoto && selectedPhoto._id === photoId) {
+      closePhotoDetails();
+    }
+
     try {
-      setIsLoadingPhotos(true);
+      // Send the delete request to the server
       await raceCategoryService.deleteCategory(photoId);
-      setUploadedPhotos(uploadedPhotos.filter(photo => photo.id !== photoId));
-      if (selectedPhoto && selectedPhoto.id === photoId) {
-        closePhotoDetails();
-      }
     } catch (err) {
-      setPhotoError('Failed to delete photo');
+      setError('Failed to delete photo. It may reappear on refresh.');
       console.error('Error deleting photo:', err);
-    } finally {
-      setIsLoadingPhotos(false);
+      // Optional: Refetch photos to revert the optimistic update if the delete fails
+      fetchGalleryPhotos(); 
     }
   };
 
@@ -205,7 +159,7 @@ export function PhotoTab() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Error and Loading States */}
               {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <div className="md:col-span-2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                   <strong className="font-bold">Error!</strong>
                   <span className="block sm:inline"> {error}</span>
                 </div>
@@ -213,9 +167,9 @@ export function PhotoTab() {
               
               {isLoading && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-                  <div className="bg-white p-4 rounded-lg shadow-lg">
+                  <div className="bg-white p-4 rounded-lg shadow-lg flex items-center">
                     <FaSpinner className="animate-spin h-8 w-8 text-blue-600" />
-                    <p className="mt-2">Processing upload...</p>
+                    <p className="mt-2 ml-3">Processing request...</p>
                   </div>
                 </div>
               )}
@@ -289,7 +243,6 @@ export function PhotoTab() {
                 </div>
                 
                 <div className="space-y-4">
-                  {/* Page Selection */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">Page Type</label>
                     <select
@@ -306,7 +259,6 @@ export function PhotoTab() {
                     </select>
                   </div>
 
-                  {/* Location Selection - Changes based on page type */}
                   {pageType && (
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-gray-700">Photo Section</label>
@@ -319,8 +271,8 @@ export function PhotoTab() {
                         {pageType === "home" ? (
                           <>
                             <option value="Race Category">Race Category</option>
-                            <option value="Event Highlights">Valued Sponsors</option>
-                            <option value="Winners">Valued Partners</option>
+                            <option value="Valued Sponsors">Valued Sponsors</option>
+                            <option value="Valued Partners">Valued Partners</option>
                           </>
                         ) : (
                           <>
@@ -347,11 +299,11 @@ export function PhotoTab() {
               <button 
                 onClick={handleUpload}
                 className={`px-6 py-2 rounded-md text-white font-medium ${
-                  selectedFile 
+                  selectedFile && photoLocation
                     ? 'bg-blue-600 hover:bg-blue-700' 
                     : 'bg-blue-400 cursor-not-allowed'
                 }`}
-                disabled={!selectedFile}
+                disabled={!selectedFile || !photoLocation}
               >
                 Upload Photo
               </button>
@@ -360,27 +312,25 @@ export function PhotoTab() {
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          {/* Header */}
           <div className="bg-blue-50 p-6 border-b">
             <h3 className="text-xl font-semibold text-gray-800">Photo Gallery</h3>
             <p className="text-gray-600 mt-1">View and manage uploaded photos</p>
           </div>
 
-          {/* Gallery Content */}
           <div className="p-6">
-            {photoError && (
+            {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
                 <strong className="font-bold">Error!</strong>
-                <span className="block sm:inline"> {photoError}</span>
+                <span className="block sm:inline"> {error}</span>
               </div>
             )}
 
-            {isLoadingPhotos ? (
+            {isLoading ? (
               <div className="flex justify-center items-center py-12">
                 <FaSpinner className="animate-spin h-8 w-8 text-blue-600" />
                 <span className="ml-2">Loading photos...</span>
               </div>
-            ) : uploadedPhotos.length === 0 ? (
+            ) : galleryPhotos.length === 0 ? (
               <div className="text-center py-12">
                 <FaImage className="mx-auto text-gray-300 text-5xl mb-4" />
                 <h3 className="text-lg font-medium text-gray-900">No photos uploaded yet</h3>
@@ -393,58 +343,58 @@ export function PhotoTab() {
                 </button>
               </div>
             ) : (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {uploadedPhotos.map((photo) => (
-                    <div key={photo.id} className="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                      <div className="aspect-w-16 aspect-h-9 bg-gray-100">
-                        <img 
-                          src={photo.imageUrl} 
-                          alt={photo.title} 
-                          className="object-cover w-full h-48"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h4 className="font-medium text-gray-900 truncate">{photo.title}</h4>
-                        <p className="text-gray-500 text-sm mt-1 line-clamp-2">{photo.description}</p>
-                        
-                        <div className="mt-4 pt-3 border-t border-gray-100">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-gray-700">{photo.uploader.name}</p>
-                              <p className="text-xs text-blue-600 flex items-center mt-1">
-                                {photo.uploader.phone}
-                              </p>
-                            </div>
-                            
-                            <div className="flex space-x-2">
-                              <button 
-                                onClick={() => openPhotoDetails(photo)}
-                                className="p-1.5 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50"
-                                title="View details"
-                              >
-                                <FaEye size={16} />
-                              </button>
-                              <button 
-                                className="p-1.5 text-gray-500 hover:text-green-600 rounded-full hover:bg-green-50"
-                                title="Download"
-                              >
-                                <FaDownload size={16} />
-                              </button>
-                              <button 
-                                onClick={() => deletePhoto(photo.id)}
-                                className="p-1.5 text-gray-500 hover:text-red-600 rounded-full hover:bg-red-50"
-                                title="Delete"
-                              >
-                                <FaTrashAlt size={16} />
-                              </button>
-                            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {galleryPhotos.map((photo) => (
+                  <div key={photo._id} className="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div className="aspect-w-16 aspect-h-9 bg-gray-100">
+                      <img 
+                        src={photo.image} 
+                        alt={photo.title} 
+                        className="object-cover w-full h-48"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h4 className="font-medium text-gray-900 truncate">{photo.title}</h4>
+                      <p className="text-gray-500 text-sm mt-1 line-clamp-2">{photo.description}</p>
+                      
+                      <div className="mt-4 pt-3 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-700 capitalize">{photo.location}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {new Date(photo.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => openPhotoDetails(photo)}
+                              className="p-1.5 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50"
+                              title="View details"
+                            >
+                              <FaEye size={16} />
+                            </button>
+                            <a 
+                              href={photo.image}
+                              download
+                              className="p-1.5 text-gray-500 hover:text-green-600 rounded-full hover:bg-green-50"
+                              title="Download"
+                            >
+                              <FaDownload size={16} />
+                            </a>
+                            <button 
+                              onClick={() => deletePhoto(photo._id)}
+                              className="p-1.5 text-gray-500 hover:text-red-600 rounded-full hover:bg-red-50"
+                              title="Delete"
+                            >
+                              <FaTrashAlt size={16} />
+                            </button>
                           </div>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -454,7 +404,7 @@ export function PhotoTab() {
       {/* Photo Detail Modal */}
       {showModal && selectedPhoto && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex justify-between items-center border-b p-4">
               <h3 className="text-xl font-semibold text-gray-800">{selectedPhoto.title}</h3>
               <button 
@@ -467,10 +417,10 @@ export function PhotoTab() {
               </button>
             </div>
             
-            <div className="overflow-y-auto p-4 max-h-[calc(90vh-8rem)]">
+            <div className="overflow-y-auto p-4">
               <div className="mb-6 bg-gray-100 rounded-lg overflow-hidden">
                 <img 
-                  src={selectedPhoto.imageUrl} 
+                  src={selectedPhoto.image} 
                   alt={selectedPhoto.title} 
                   className="w-full object-contain max-h-[50vh]"
                 />
@@ -483,24 +433,23 @@ export function PhotoTab() {
                 </div>
                 
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-gray-500 mb-2">Uploader Information</h4>
+                  <h4 className="text-sm font-medium text-gray-500 mb-2">Details</h4>
                   <div className="space-y-2">
                     <div className="flex items-center">
                       <FaUser className="text-blue-600 mr-2" size={14} />
-                      <span className="text-gray-900">{selectedPhoto.uploader.name}</span>
+                      <span className="text-gray-900">Uploaded by Admin</span>
                     </div>
-                    
                   </div>
                 </div>
                 
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">Upload Date</h4>
-                  <p className="mt-1 text-gray-900">{selectedPhoto.uploadDate}</p>
+                  <p className="mt-1 text-gray-900">{new Date(selectedPhoto.createdAt).toLocaleString()}</p>
                 </div>
               </div>
             </div>
             
-            <div className="border-t p-4 flex justify-end space-x-3">
+            <div className="border-t p-4 flex justify-end space-x-3 mt-auto">
               <button 
                 onClick={closePhotoDetails}
                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
@@ -508,7 +457,7 @@ export function PhotoTab() {
                 Close
               </button>
               <button 
-                onClick={() => deletePhoto(selectedPhoto.id)}
+                onClick={() => deletePhoto(selectedPhoto._id)}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
                 Delete Photo

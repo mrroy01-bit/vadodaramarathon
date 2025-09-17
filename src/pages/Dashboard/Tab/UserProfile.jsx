@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaUserCircle, FaEdit, FaSave, FaTimes, FaCamera, FaSpinner } from 'react-icons/fa';
-import { userProfileService } from '../../../services/api';
+import { userService } from '../../../services/api';
 import { getUserFromToken } from '../../../services/auth';
 
 const UserProfile = () => {
@@ -26,7 +26,7 @@ const UserProfile = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await userProfileService.getUserProfile();
+        const response = await userService.getUserProfile();
         console.log('Profile response:', response);
 
         const data = response?.data || response;
@@ -119,13 +119,13 @@ const UserProfile = () => {
         Object.entries(profileData).filter(([_, value]) => value !== '' && value !== undefined)
       );
 
-      const response = await userProfileService.updateUserProfile(cleanedFormData);
+      const response = await userService.updateUserProfile(cleanedFormData);
 
       setSuccess('Profile updated successfully!');
       setIsEditing(false);
 
       // Refresh updated profile
-      const updatedData = response?.data || (await userProfileService.getUserProfile());
+      const updatedData = response?.data || (await userService.getUserProfile());
       if (updatedData) {
         const newProfileData = {
           firstName: updatedData.firstName || updatedData.fname || '',

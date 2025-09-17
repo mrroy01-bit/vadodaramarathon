@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BannerTab } from "./Tab/Banner";
+import  BannerTab  from "./Tab/Banner";
 import { FaUserCircle, FaImage, } from "react-icons/fa";
 
 export default function Dashboard() {

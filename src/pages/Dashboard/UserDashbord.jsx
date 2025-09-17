@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaUserCircle, FaRunning, FaHistory, FaMedal } from "react-icons/fa";
 import UserProfile from "./Tab/UserProfile";
-import { userProfileService } from "../../services/api";
+import { userService } from "../../services/api";
 import { setAuthToken } from "../../services/auth";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +16,7 @@ export default function UserDashboard() {
     const fetchUserProfile = async () => {
       try {
         setLoading(true);
-        const userData = await userProfileService.getUserProfile();
+        const userData = await userService.getUserProfile();
 
         // normalize API response shape
         const userObj = userData?.data?.user || userData?.data || userData;

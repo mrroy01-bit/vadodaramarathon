@@ -119,43 +119,104 @@ export const raceCategoryService = {
 };
 
 // Hero Image services
+// Hero Image services
 export const heroImageService = {
-  // Get hero image
-  getHeroImage: async () => {
+  // Upload new hero image
+  uploadHeroImage: async (file) => {
     try {
-      const response = await apiClient.get('/api/hero-image');
+      const formData = new FormData();
+      formData.append("hero_img_filename", file); // 👈 must match backend
+
+      const response = await apiClient.post("/api/hero-image", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       return response.data;
     } catch (error) {
+      console.error("Upload hero image error:", error.response?.data || error);
       throw error;
     }
   },
 
   // Update hero image
-  updateHeroImage: async (imageData) => {
+  updateHeroImage: async (file) => {
     try {
       const formData = new FormData();
-      formData.append('image', imageData);
-      const response = await apiClient.put('/api/hero-image/update-hero', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      formData.append("hero_img_filename", file); // 👈 same key
+
+      const response = await apiClient.put(
+        "/api/hero-image/update-hero",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
       return response.data;
     } catch (error) {
+      console.error("Update hero image error:", error.response?.data || error);
       throw error;
     }
   },
 };
 
-// User Profile services
-export const userProfileService = {
+
+
+// User Profile services - merged into userService
+const userProfileService = {
   // Get user profile
   getUserProfile: async () => {
     try {
+      // Get token from localStorage
+      const token = localStorage.getItem('user_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
       const response = await apiClient.get('/api/register/user-profile');
-      return response.data;
+
+      // Debug log
+      
+
+      if (!response.data) {
+        throw new Error('No profile data received');
+      }
+
+      let profileData = null;
+      const responseData = response.data;
+
+      // Try different response structures
+      if (responseData.user) {
+        profileData = responseData.user;
+      } else if (responseData.data?.user) {
+        profileData = responseData.data.user;
+      } else if (responseData.data) {
+        profileData = responseData.data;
+      } else {
+        profileData = responseData;
+      }
+
+     
+      return {
+        data: profileData,
+        status: response.status
+      };
     } catch (error) {
-      throw error;
+      console.error('Profile fetch error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
+      // Check if it's an auth error
+      if (error.response?.status === 401) {
+        setAuthToken(null); // Clear invalid token
+        throw new Error('Session expired. Please login again.');
+      }
+      
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Failed to fetch user profile'
+      );
     }
   },
 
@@ -163,9 +224,13 @@ export const userProfileService = {
   updateUserProfile: async (profileData) => {
     try {
       const response = await apiClient.put('/api/register/update-profile', profileData);
-      return response.data;
+      return {
+        data: response.data.user || response.data.data || response.data,
+        status: response.status
+      };
     } catch (error) {
-      throw error;
+      console.error('Profile update error:', error);
+      throw error.response?.data || error;
     }
   }
 };
@@ -180,74 +245,76 @@ export const authService = {
         throw new Error('Email and password are required');
       }
 
-      // Try both endpoints
-      let response;
-      try {
-        response = await apiClient.post('/api/login', credentials);
-      } catch (firstError) {
-        console.log('First endpoint failed, trying fallback endpoint...');
-        response = await apiClient.post('/api/login', credentials);
-      }
+      // Log the request payload (without sensitive data)
       
-      // Debug log
-      console.log('API Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-        data: response.data
+      // Make the login request
+      const response = await apiClient.post('/api/login', {
+        email: credentials.email,
+        password: credentials.password
       });
       
+      // Debug log (without sensitive data)
+     
+      
+      // Ensure we have the required data
       if (!response.data) {
         throw new Error('No data received from server');
       }
 
-      // Handle both possible response structures
-      const responseData = response.data.data || response.data;
+      const responseData = response.data;
       
-      // Debug logs
-      console.log('Full response data:', response.data);
-      console.log('Processed response data:', responseData);
-      
-      // Validate response structure
-      if (!responseData.token) {
-        throw new Error('No token in response');
+      // Try to extract token from different possible locations
+      const token = responseData.token || responseData.data?.token;
+      if (!token) {
+        throw new Error('No token received from server');
       }
 
-      // Store token
-      setAuthToken(responseData.token);
-      
-      // Extract user data from the response
-      let userData;
-      
-      if (responseData.user) {
-        // If user data is directly in the response
-        userData = responseData.user;
-      } else if (responseData.userData) {
-        // Alternative field name
-        userData = responseData.userData;
-      } else {
-        // Try to decode the token
-        try {
-          const base64Url = responseData.token.split('.')[1];
-          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-          userData = JSON.parse(window.atob(base64));
-          console.log('Decoded token payload:', userData);
-        } catch (error) {
-          console.error('Token parsing error:', error);
+      // Save token immediately
+      setAuthToken(token);
+
+      // Fetch user profile to get complete user data including role
+      const profileResponse = await apiClient.get('/api/register/user-profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
+      });
+
+      console.log('Profile Response:', profileResponse.data);
+
+      // Extract user data from profile response
+      let userData = null;
+      if (profileResponse.data.user) {
+        userData = profileResponse.data.user;
+      } else if (profileResponse.data.data) {
+        userData = profileResponse.data.data;
+      } else {
+        userData = profileResponse.data;
       }
 
-      // If we still don't have user data, look for it in other possible response locations
       if (!userData) {
-        userData = responseData.data || responseData;
+        throw new Error('Could not extract user data from response');
       }
 
-      console.log('Final user data:', userData);
-      
-      // Store the user data we found
+      // Ensure we have role information
+      if (!userData.role && !userData.ROLE) {
+        throw new Error('No role information in user profile');
+      }
+
+      // Debug log
+      console.log('Extracted user data:', {
+        hasName: !!userData.name,
+        hasEmail: !!userData.email,
+        hasRole: !!userData.role
+      });
+
+      // Save token and user data
+      setAuthToken(token);
       localStorage.setItem('user', JSON.stringify(userData));
       
-      return { ...responseData, user: userData };
+      return {
+        token,
+        user: userData
+      };
     } catch (error) {
       console.error('Login service error:', error);
       if (error.response) {
@@ -274,7 +341,7 @@ export const authService = {
       }
 
       // Fallback: get all users and find the specific one
-      const response = await apiClient.get('/api/register/fetch-all-user');
+      const response = await apiClient.get('/api/register/fetch-all-users');
       console.log('All users response:', response.data);
       
       // Find the specific user by ID
@@ -325,10 +392,54 @@ export const userService = {
   // Fetch all users
   getAllUsers: async () => {
     try {
-      const response = await apiClient.get('/api/register/fetch-all-user');
-      return response.data;
+      // Get token from localStorage
+      const token = localStorage.getItem('user_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      console.log('Fetching all users...');
+      const response = await apiClient.get('/api/register/fetch-all-user', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('All users response:', response.data);
+
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+
+      // Handle different response structures
+      let users = [];
+      if (Array.isArray(response.data)) {
+        users = response.data;
+      } else if (response.data.users) {
+        users = response.data.users;
+      } else if (response.data.data) {
+        users = response.data.data;
+      }
+
+      if (!Array.isArray(users)) {
+        throw new Error('Invalid users data format');
+      }
+
+      // Map the user data to ensure consistent structure
+      const mappedUsers = users.map(user => ({
+        id: user._id || user.id,
+        name: user.name || `${user.fname || ''} ${user.lname || ''}`.trim(),
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt || user.created_at,
+        ...user // include other fields
+      }));
+
+      console.log('Processed users:', mappedUsers); // Debug log
+      return { users: mappedUsers };
     } catch (error) {
-      throw error.response ? error.response.data : new Error('User service unavailable');
+      console.error('Get all users error:', error);
+      throw error.response?.data?.message || error.message || 'Failed to fetch users';
     }
   },
   

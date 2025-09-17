@@ -32,33 +32,57 @@ export default function AdminLogin() {
     try {
       // 1. Call login API
       const response = await authService.login(formData);
-      const { token } = response;
+      
+      // Debug response
+      console.log("Login response:", response);
+      
+      // 2. Check if we have a valid response with token and user data
+      if (!response || !response.token) {
+        throw new Error("Invalid response from server: Missing token");
+      }
 
-      // 2. Save token
-      setAuthToken(token);
+      // 3. Save token
+      setAuthToken(response.token);
 
-      // 3. Fetch user profile
-      const profileResponse = await userProfileService.getUserProfile();
-      const user = profileResponse.data;
+      // 4. Extract user data from login response
+      const user = response.data || response.user;
+      
+      if (!user) {
+        throw new Error("No user data in response");
+      }
 
-      // 4. Set user data
+      // 5. Set user data
       setUserData(user);
-      const userRole = user.role.toLowerCase();
-      // 5. Redirect based on role
-      if (userRole === "admin") {
-        navigate("/admin/dashboard");
-      } else if (userRole === "user") {
-        navigate("/user/dashboard");
-      }else if(userRole === "brand"){
-navigate("/brand/dashboard");
-      } else {
-        setError("Invalid role: " + userRole);
+      
+      // 6. Extract role from user data
+      const userRole = user.role ? user.role.toLowerCase() : 
+                      user.ROLE ? user.ROLE.toLowerCase() :
+                      null;
+
+      console.log("User role:", userRole); // Debug log
+
+      if (!userRole) {
+        throw new Error("User role not found in response");
+      }
+
+      // 7. Redirect based on role
+      switch (userRole) {
+        case "admin":
+          navigate("/admin/dashboard");
+          break;
+       
+        case "brand":
+          navigate("/brand/dashboard");
+          break;
+        default:
+          setError("Invalid role: " + userRole);
       }
     } catch (err) {
       console.error("Login error:", err);
       setError(
+        err.message || 
         err.response?.data?.message ||
-          "Login failed. Please check your credentials."
+        "Login failed. Please check your credentials."
       );
     } finally {
       setLoading(false);

@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Header from "../Component/Header";
-import Banner from "../assest/banner.jpg";
+import Banner from "../assest/banner.jpg"; // Fallback image
 import VideoCard from "../Component/VideoCard";
 import { heroImageService, raceCategoryService } from "../services/api";
 import SponsorSlider from "../Component/SponsorSlider";
 import ValuablePartners from "../Component/ValuedPartners";
 import ValuableAssociates from "../Component/ValuableAssociates";
 import Footer from "../Component/Footer/Footer";
-import {
-  FaClipboardList,
-  FaQuestionCircle,
-  FaMoneyCheckAlt,
-} from "react-icons/fa";
+import { FaClipboardList, FaQuestionCircle, FaMoneyCheckAlt } from "react-icons/fa";
 
 const LandingPage = () => {
   const [heroImage, setHeroImage] = useState(null);
@@ -21,33 +17,43 @@ const LandingPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
+      setIsLoading(true); // Start loading state
       try {
         const [heroData, categoriesData] = await Promise.all([
           heroImageService.getHeroImage(),
-          raceCategoryService.getAllCategories()
+          raceCategoryService.getAllCategories(),
         ]);
-        setHeroImage(heroData);
-        setMarathonCategories(categoriesData);
+
+        console.log("Hero Image API Response:", heroData);
+        console.log("Race Categories API Response:", categoriesData);
+        
+        // Safely set the hero image URL from the response object
+        if (heroData && heroData.imageUrl) {
+          setHeroImage(heroData.imageUrl);
+        }
+
+        // Safely set the categories, ensuring it's always an array
+        const categories = Array.isArray(categoriesData) 
+          ? categoriesData 
+          : categoriesData?.data || [];
+        setMarathonCategories(categories);
+
       } catch (err) {
-        setError('Failed to load data');
-        console.error('Error loading data:', err);
+        console.error("Error loading data:", err);
+        setError("Failed to load page content. Please try again later.");
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); // ALWAYS stop loading, even if there's an error
       }
     };
 
     fetchData();
   }, []);
 
-  // Default marathon cards will be used as fallback if API fails
+  // Default marathon cards fallback
   const defaultMarathonCards = [
     { title: "Full Marathon (42.195kms)", img: "/images/marathon1.jpg" },
     { title: "Half Marathon (21.097kms)", img: "/images/marathon2.jpg" },
     { title: "10kms", img: "/images/marathon3.jpg" },
-    { title: "Timed Run (5kms)", img: "/images/marathon4.jpg" },
-    { title: "Heritage Fun Run", img: "/images/marathon5.jpg" },
-    { title: "Train with Dina for MGVM 2024!", img: "/images/marathon6.jpg" },
   ];
 
   return (
@@ -56,28 +62,13 @@ const LandingPage = () => {
 
       {/* Banner Section */}
       <div className="banner">
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 text-sm" role="alert">
-            {error}
-          </div>
-        )}
         <div className="overlay relative">
           {isLoading ? (
-            <div className="w-full h-64 bg-gray-200 animate-pulse flex items-center justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-            </div>
-          ) : error ? (
-            <div className="w-full h-64 bg-red-100 flex items-center justify-center">
-              <img
-                src={Banner}
-                alt="Fallback Banner"
-                className="w-full h-auto object-cover"
-              />
-            </div>
+            <div className="w-full h-64 sm:h-96 bg-gray-200 animate-pulse"></div>
           ) : (
             <img
-              src={heroImage?.image || Banner}
-              alt="Banner"
+              src={heroImage || Banner} // Use fetched image, or fallback to the imported one
+              alt="Marathon Banner"
               className="w-full h-auto object-cover"
             />
           )}
@@ -101,17 +92,7 @@ const LandingPage = () => {
         <p className="text-base sm:text-xl mt-8 font-medium leading-7 sm:leading-8 text-gray-700">
           Welcome to the MG Vadodara Marathon 2026. On 1st February become a
           part of history by participating in the 13th Edition of India's
-          Largest Marathon. Vadodara Marathon is accredited to AFI, GSAAA, SAG
-          and BDAAA and route certified by AIMS. Vadodara Marathon is a World
-          Marathon Majors Qualifying Race of the Abbott Wanda World Marathon
-          Majors.
-          <br />
-          <br />
-          Vadodara Marathon’s motto of “Sports, Seva, Swachhta” is at the core
-          of all the activities, supporting various social and civic causes.
-          Vadodara Marathon, or VM, offers a platform to local NGOs and Divyang
-          Associations to increase their visibility, raise awareness and funds
-          for their causes.
+          Largest Marathon.
         </p>
       </div>
 
@@ -120,7 +101,6 @@ const LandingPage = () => {
       {/* Info Cards */}
       <section className="w-full max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {/* Card 1 */}
           <div className="bg-sky-600 text-white px-6 py-8 flex flex-col justify-between h-full rounded-md">
             <div>
               <h2 className="text-xl font-bold mb-3">Rules & Regulations</h2>
@@ -128,8 +108,6 @@ const LandingPage = () => {
             </div>
             <FaClipboardList className="text-white/30 text-4xl self-end mt-6" />
           </div>
-
-          {/* Card 2 */}
           <div className="bg-lime-500 text-white px-6 py-8 flex flex-col justify-between h-full rounded-md">
             <div>
               <h2 className="text-xl font-bold mb-3">FAQs</h2>
@@ -137,8 +115,6 @@ const LandingPage = () => {
             </div>
             <FaQuestionCircle className="text-white/30 text-4xl self-end mt-6" />
           </div>
-
-          {/* Card 3 */}
           <div className="bg-purple-800 text-white px-6 py-8 flex flex-col justify-between h-full rounded-md">
             <div>
               <h2 className="text-xl font-bold mb-3">Price Chart</h2>
@@ -155,24 +131,23 @@ const LandingPage = () => {
           <div className="flex justify-center items-center min-h-[300px]">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-800"></div>
           </div>
-        ) : error ? (
-          <div className="text-center text-red-600 py-8">
-            {error}
-          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {(marathonCategories.length > 0 ? marathonCategories : defaultMarathonCards).map((card, i) => (
+            {(marathonCategories.length > 0
+              ? marathonCategories
+              : defaultMarathonCards
+            ).map((card) => (
               <div
-                key={i}
+                key={card._id || card.title} // Use a unique key from data
                 className="relative h-64 bg-cover bg-center rounded shadow-md"
                 style={{ backgroundImage: `url('${card.image || card.img}')` }}
               >
-                <div className="absolute inset-0 bg-black/40 flex items-end justify-center p-4">
+                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-end p-4">
                   <h3 className="text-white text-lg sm:text-xl font-semibold text-center">
                     {card.title}
                   </h3>
                   {card.description && (
-                    <p className="text-white text-sm mt-2 opacity-80">
+                    <p className="text-white text-sm mt-2 opacity-80 text-center">
                       {card.description}
                     </p>
                   )}

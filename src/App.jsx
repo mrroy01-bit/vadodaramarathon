@@ -1,4 +1,6 @@
 import './App.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import LandingPage from './pages/landingPage';
 import VmEditions from './pages/VmEditions/Vm_editions';
 import TwelfthEdition from "./pages/VmEditions/Tab/12thedition";
@@ -58,7 +60,20 @@ import SponsorsDashboard from './pages/Dashboard/SponsorDashboard';
 import { Route, Routes, Navigate } from 'react-router-dom';
 function App() {
   return (
-   <Routes>
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      <Routes>
        <Route path="/" element={<LandingPage />} />
 
        <Route path="/vm" element={<VmEditions />}>
@@ -130,6 +145,7 @@ function App() {
         <Route path="/sponsors/dashboard" element={<SponsorsDashboard />} />
 
    </Routes>
+    </>
   );
 }
 

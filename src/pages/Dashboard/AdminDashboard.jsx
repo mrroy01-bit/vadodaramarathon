@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { PhotoTab } from "./Tab/photo";
-import { BannerTab } from "./Tab/Banner";
+import {PhotoTab}  from "./Tab/photo";
+import  BannerTab  from "./Tab/Banner";
 import { FaUserCircle, FaImages, FaImage, FaUsers, FaUserPlus, FaSpinner } from "react-icons/fa";
 import AllUser from "./Tab/allUser";
 import AddNewuser from "./Tab/addNewuser";
-import { userProfileService } from "../../services/api";
+import { userService } from "../../services/api";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("photo");
@@ -20,16 +20,34 @@ export default function Dashboard() {
     const fetchAdminProfile = async () => {
       setLoading(true);
       try {
-        const response = await userProfileService.getUserProfile();
-        if (response) {
+        // Try to get profile from localStorage first
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
           setAdminProfile({
-            name: `${response.firstName} ${response.lastName}`,
-            email: response.email,
+            name: userData.fname && userData.lname ? 
+              `${userData.fname} ${userData.lname}` : 
+              userData.name || "Admin User",
+            email: userData.email || "admin@example.com"
+          });
+        }
+
+        // Then fetch fresh data from API
+        const response = await userService.getUserProfile();
+        console.log("Admin profile API response:", response);
+        
+        if (response?.data) {
+          const userData = response.data;
+          setAdminProfile({
+            name: userData.fname && userData.lname ? 
+              `${userData.fname} ${userData.lname}` : 
+              userData.name || "Admin User",
+            email: userData.email || "admin@example.com"
           });
         }
       } catch (err) {
         console.error("Error fetching admin profile:", err);
-        setError(err.response?.data?.message || "Failed to load admin profile");
+        setError(err.message || "Failed to load admin profile");
       } finally {
         setLoading(false);
       }
@@ -108,8 +126,20 @@ export default function Dashboard() {
             <div className="absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-xl p-4 hidden group-hover:block z-10">
               <div className="flex flex-col items-center mb-3 pb-3 border-b">
                 <FaUserCircle className="w-16 h-16 text-blue-600 mb-2" />
-                <p className="text-sm font-medium">{adminProfile.name}</p>
-                <p className="text-xs text-gray-600">{adminProfile.email}</p>
+                <p className="text-sm font-medium">
+                  {loading ? (
+                    <FaSpinner className="w-4 h-4 animate-spin" />
+                  ) : (
+                    adminProfile?.name || "Admin User"
+                  )}
+                </p>
+                <p className="text-xs text-gray-600">
+                  {loading ? (
+                    <FaSpinner className="w-3 h-3 animate-spin" />
+                  ) : (
+                    adminProfile?.email || "Loading..."
+                  )}
+                </p>
                 {error && (
                   <p className="text-xs text-red-500 mt-1">{error}</p>
                 )}
