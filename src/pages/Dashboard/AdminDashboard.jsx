@@ -4,6 +4,8 @@ import  BannerTab  from "./Tab/Banner";
 import { FaUserCircle, FaImages, FaImage, FaUsers, FaUserPlus, FaSpinner } from "react-icons/fa";
 import AllUser from "./Tab/allUser";
 import AddNewuser from "./Tab/addNewuser";
+import   { SponsorTab }  from "./Tab/Sponsors";
+import { PartnersTab } from "./Tab/Partners";
 import { userService } from "../../services/api";
 
 export default function Dashboard() {
@@ -34,7 +36,6 @@ export default function Dashboard() {
 
         // Then fetch fresh data from API
         const response = await userService.getUserProfile();
-        console.log("Admin profile API response:", response);
         
         if (response?.data) {
           const userData = response.data;
@@ -67,7 +68,7 @@ export default function Dashboard() {
         <div className="space-y-2">
           <button
             className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${
-              activeTab === "photo" 
+              activeTab === "race" 
                 ? "bg-blue-600 text-white shadow-md" 
                 : "hover:bg-blue-50 text-gray-700"
             }`}
@@ -89,6 +90,17 @@ export default function Dashboard() {
           </button>
           <button
             className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${
+              activeTab === "sponsor" 
+                ? "bg-blue-600 text-white shadow-md" 
+                : "hover:bg-blue-50 text-gray-700"
+            }`}
+            onClick={() => setActiveTab("sponsor")}
+          >
+            <FaImage className="text-lg" />
+            <span>Sponsor Management</span>
+          </button>
+          <button
+            className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${
               activeTab === "user" 
                 ? "bg-blue-600 text-white shadow-md" 
                 : "hover:bg-blue-50 text-gray-700"
@@ -98,6 +110,17 @@ export default function Dashboard() {
             <FaUsers className="text-lg" />
             <span>User Management</span>
           </button>
+          <button
+            className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${
+              activeTab === "partner"
+                ? "bg-blue-600 text-white shadow-md"
+                : "hover:bg-blue-50 text-gray-700"
+            }`}
+            onClick={() => setActiveTab("partner")}
+          >
+            <FaUsers className="text-lg" />
+            <span>Partner Management</span>
+          </button>
         </div>
       </div>
 
@@ -106,10 +129,14 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-lg shadow-sm">
           <h1 className="text-2xl font-bold text-gray-800">
-            {activeTab === "photo"
+            {activeTab === "race"
               ? "Photo Gallery Management"
               : activeTab === "banner"
               ? "Banner Management"
+              : activeTab === "sponsor"
+              ? "Sponsor Management"
+              : activeTab === "partner"
+              ? "Partner Management"
               : "User Management"}
           </h1>
           <div className="relative group">
@@ -161,6 +188,8 @@ export default function Dashboard() {
         {/* Dynamic Tab Content */}
         {activeTab === "race" && <RaceTab />}
         {activeTab === "banner" && <BannerTab />}
+        {activeTab === "sponsor" && <SponsorTab />}
+        {activeTab === "partner" && <PartnersTab />}
         {activeTab === "user" && (
           <div>
             <div className="flex gap-4 mb-6">
@@ -188,6 +217,7 @@ export default function Dashboard() {
             <div>
               {userTab === "all" && <AllUser />}
               {userTab === "add" && <AddNewuser />}
+
             </div>
           </div>
         )}

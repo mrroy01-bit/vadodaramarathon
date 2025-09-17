@@ -28,7 +28,6 @@ export function RaceTab() {
     setError(null);
     try {
       const response = await raceCategoryService.getAllCategories();
-      console.log("API Response:", response); // Debug log to see response structure
       
       // Handle different response structures
       let categoryData = [];
@@ -256,7 +255,8 @@ export function RaceTab() {
                 console.log("Category data:", cat);
                 
                 // Determine the image URL
-                const imageUrl = cat.image || cat.imageUrl || cat.url || cat.file_path;
+                // const imageUrl = cat.image || cat.imageUrl || cat.url || cat.file_path;
+                const imageUrl =cat.race_category_url
                 const title = cat.title || cat.category_name || cat.name || "Untitled";
                 const description = cat.description || "";
                 
@@ -268,9 +268,16 @@ export function RaceTab() {
                     <div className="h-48 w-full bg-gray-100 flex items-center justify-center">
                       {imageUrl ? (
                         <img
+                         onClick={() => openCategoryDetails({
+                            ...cat,
+                            title: title,
+                            image: imageUrl,
+                            description: description
+                          })}
                           src={imageUrl}
                           alt={title}
-                          className="h-48 w-full object-cover"
+                          className="h-48 w-full object-cover cursor-pointer"
+
                           onError={(e) => {
                             e.target.onerror = null;
                             console.warn(`Failed to load image for: ${title}. URL: ${imageUrl}`);

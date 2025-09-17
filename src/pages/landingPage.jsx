@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Header from "../Component/Header";
 import Banner from "../assest/banner.jpg"; // Fallback image
 import VideoCard from "../Component/VideoCard";
-import { heroImageService, raceCategoryService } from "../services/api";
+import { heroImageService, raceCategoryService, } from "../services/api";
 import SponsorSlider from "../Component/SponsorSlider";
 import ValuablePartners from "../Component/ValuedPartners";
 import ValuableAssociates from "../Component/ValuableAssociates";
@@ -13,30 +13,29 @@ const LandingPage = () => {
   const [heroImage, setHeroImage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [marathonCategories, setMarathonCategories] = useState([]);
+  const [raceCategories, setRaceCategories] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true); // Start loading state
       try {
-        const [heroData, categoriesData] = await Promise.all([
-          heroImageService.getHeroImage(),
+        const [ /* heroData */ categoriesData, sponsorsData] = await Promise.all([
+          // heroImageService.getHeroImage(),
           raceCategoryService.getAllCategories(),
         ]);
 
-        console.log("Hero Image API Response:", heroData);
-        console.log("Race Categories API Response:", categoriesData);
+        // console.log("Hero Image API Response:", heroData);
+        // console.log("Race Categories API Response:", categoriesData);
         
         // Safely set the hero image URL from the response object
-        if (heroData && heroData.imageUrl) {
-          setHeroImage(heroData.imageUrl);
-        }
+        // if (heroData && heroData.imageUrl) {
+        //   setHeroImage(heroData.imageUrl);
+        // }
 
         // Safely set the categories, ensuring it's always an array
-        const categories = Array.isArray(categoriesData) 
-          ? categoriesData 
-          : categoriesData?.data || [];
-        setMarathonCategories(categories);
+        const categories = categoriesData?.data || [];
+        setRaceCategories(categories);
+
 
       } catch (err) {
         console.error("Error loading data:", err);
@@ -46,8 +45,13 @@ const LandingPage = () => {
       }
     };
 
+
+
+
     fetchData();
+
   }, []);
+
 
   // Default marathon cards fallback
   const defaultMarathonCards = [
@@ -55,6 +59,7 @@ const LandingPage = () => {
     { title: "Half Marathon (21.097kms)", img: "/images/marathon2.jpg" },
     { title: "10kms", img: "/images/marathon3.jpg" },
   ];
+
 
   return (
     <>
@@ -133,24 +138,24 @@ const LandingPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {(marathonCategories.length > 0
-              ? marathonCategories
+            {(raceCategories.length > 0
+              ? raceCategories
               : defaultMarathonCards
             ).map((card) => (
               <div
                 key={card._id || card.title} // Use a unique key from data
                 className="relative h-64 bg-cover bg-center rounded shadow-md"
-                style={{ backgroundImage: `url('${card.image || card.img}')` }}
+                style={{ backgroundImage: `url('${card.race_category_url}')` }}
               >
                 <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-end p-4">
                   <h3 className="text-white text-lg sm:text-xl font-semibold text-center">
-                    {card.title}
+                    {card.category_name}
                   </h3>
-                  {card.description && (
+                  {/* {card.description && (
                     <p className="text-white text-sm mt-2 opacity-80 text-center">
                       {card.description}
                     </p>
-                  )}
+                  )} */}
                 </div>
               </div>
             ))}
