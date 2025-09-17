@@ -40,9 +40,17 @@ export const raceCategoryService = {
   // Get all race categories
   getAllCategories: async () => {
     try {
+      console.log("Fetching race categories from:", `${BASE_URL}/api/race-category/fetch-all`);
       const response = await apiClient.get('/api/race-category/fetch-all');
+      console.log("Raw API response:", response);
       return response.data;
     } catch (error) {
+      console.error("API Error details:", {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
       throw error;
     }
   },

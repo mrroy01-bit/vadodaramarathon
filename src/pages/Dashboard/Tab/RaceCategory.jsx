@@ -28,10 +28,27 @@ export function RaceTab() {
     setError(null);
     try {
       const response = await raceCategoryService.getAllCategories();
-      setCategories(Array.isArray(response) ? response : response?.data || []);
+      console.log("API Response:", response); // Debug log to see response structure
+      
+      // Handle different response structures
+      let categoryData = [];
+      if (Array.isArray(response)) {
+        categoryData = response;
+      } else if (response?.data && Array.isArray(response.data)) {
+        categoryData = response.data;
+      } else if (response?.categories && Array.isArray(response.categories)) {
+        categoryData = response.categories;
+      } else if (response?.data?.categories && Array.isArray(response.data.categories)) {
+        categoryData = response.data.categories;
+      } else {
+        console.warn("Unexpected response structure:", response);
+        categoryData = []; // Fallback to empty array
+      }
+      
+      setCategories(categoryData);
     } catch (err) {
-      setError("Failed to fetch race categories.");
-      console.error(err);
+      console.error("Error fetching race categories:", err);
+      setError(err.response?.data?.message || err.message || "Failed to fetch race categories.");
       setCategories([]);
     } finally {
       setIsLoading(false);
@@ -234,50 +251,83 @@ export function RaceTab() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categories.map((cat) => (
-                <div
-                  key={cat._id}
-                  className="border rounded-lg shadow-sm overflow-hidden"
-                >
-                  <img
-                    src={cat.image}
-                    alt={cat.title}
-                    className="h-48 w-full object-cover"
-                  />
-                  <div className="p-4">
-                    <h4 className="font-semibold text-lg">{cat.title}</h4>
-                    <p className="text-gray-600 text-sm mt-1 truncate">
-                      {cat.description}
-                    </p>
-                    <div className="flex justify-end space-x-3 mt-4">
-                      <button
-                        onClick={() => openCategoryDetails(cat)}
-                        className="text-blue-600 hover:text-blue-800"
-                        title="View"
-                      >
-                        <FaEye />
-                      </button>
-                      <a
-                        href={cat.image}
-                        download
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-green-600 hover:text-green-800"
-                        title="Download"
-                      >
-                        <FaDownload />
-                      </a>
-                      <button
-                        onClick={() => deleteCategory(cat._id)}
-                        className="text-red-600 hover:text-red-800"
-                        title="Delete"
-                      >
-                        <FaTrashAlt />
-                      </button>
+              {categories.map((cat) => {
+                // Debug log to check category data
+                console.log("Category data:", cat);
+                
+                // Determine the image URL
+                const imageUrl = cat.image || cat.imageUrl || cat.url || cat.file_path;
+                const title = cat.title || cat.category_name || cat.name || "Untitled";
+                const description = cat.description || "";
+                
+                return (
+                  <div
+                    key={cat._id || cat.id}
+                    className="border rounded-lg shadow-sm overflow-hidden"
+                  >
+                    <div className="h-48 w-full bg-gray-100 flex items-center justify-center">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={title}
+                          className="h-48 w-full object-cover"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            console.warn(`Failed to load image for: ${title}. URL: ${imageUrl}`);
+                            e.target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNMTAwIDEyNUMxMTMuODA3IDEyNSAxMjUgMTEzLjgwNyAxMjUgMTAwQzEyNSA4Ni4xOTMgMTEzLjgwNyA3NSAxMDAgNzVDODYuMTkzIDc1IDc1IDg2LjE5MyA3NSAxMDBDNzUgMTEzLjgwNyA4Ni4xOTMgMTI1IDEwMCAxMjVaIiBmaWxsPSIjQTBBRUJBIi8+PHBhdGggZD0iTTU1IDU1SDY1VjY1SDU1VjU1WiIgZmlsbD0iI0EwQUVCQSIvPjxwYXRoIGQ9Ik0xMzUgNTVIMTQ1VjY1SDEzNVY1NVoiIGZpbGw9IiNBMEFFQkEiLz48cGF0aCBkPSJNNTUgMTM1SDY1VjE0NUg1NVYxMzVaIiBmaWxsPSIjQTBBRUJBIi8+PHBhdGggZD0iTTEzNSAxMzVIMTQ1VjE0NUgxMzVWMTM1WiIgZmlsbD0iI0EwQUVCQSIvPjwvc3ZnPg==";
+                          }}
+                        />
+                      ) : (
+                        <div className="text-gray-400 flex flex-col items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <p className="text-sm">No image available</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <h4 className="font-semibold text-lg">{title}</h4>
+                      <p className="text-gray-600 text-sm mt-1 truncate">
+                        {description}
+                      </p>
+                      <div className="flex justify-end space-x-3 mt-4">
+                        <button
+                          onClick={() => openCategoryDetails({
+                            ...cat,
+                            title: title,
+                            image: imageUrl,
+                            description: description
+                          })}
+                          className="text-blue-600 hover:text-blue-800"
+                          title="View"
+                        >
+                          <FaEye />
+                        </button>
+                        {imageUrl && (
+                          <a
+                            href={imageUrl}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-600 hover:text-green-800"
+                            title="Download"
+                          >
+                            <FaDownload />
+                          </a>
+                        )}
+                        <button
+                          onClick={() => deleteCategory(cat._id || cat.id)}
+                          className="text-red-600 hover:text-red-800"
+                          title="Delete"
+                        >
+                          <FaTrashAlt />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -299,12 +349,37 @@ export function RaceTab() {
               </button>
             </div>
             <div className="p-4">
-              <img
-                src={selectedCategory.image}
-                alt={selectedCategory.title}
-                className="w-full object-contain max-h-[60vh] rounded-md mb-4"
-              />
+              {selectedCategory.image ? (
+                <img
+                  src={selectedCategory.image}
+                  alt={selectedCategory.title}
+                  className="w-full object-contain max-h-[60vh] rounded-md mb-4"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU3RUIiLz48cGF0aCBkPSJNMTAwIDEyNUMxMTMuODA3IDEyNSAxMjUgMTEzLjgwNyAxMjUgMTAwQzEyNSA4Ni4xOTMgMTEzLjgwNyA3NSAxMDAgNzVDODYuMTkzIDc1IDc1IDg2LjE5MyA3NSAxMDBDNzUgMTEzLjgwNyA4Ni4xOTMgMTI1IDEwMCAxMjVaIiBmaWxsPSIjQTBBRUJBIi8+PHBhdGggZD0iTTU1IDU1SDY1VjY1SDU1VjU1WiIgZmlsbD0iI0EwQUVCQSIvPjxwYXRoIGQ9Ik0xMzUgNTVIMTQ1VjY1SDEzNVY1NVoiIGZpbGw9IiNBMEFFQkEiLz48cGF0aCBkPSJNNTUgMTM1SDY1VjE0NUg1NVYxMzVaIiBmaWxsPSIjQTBBRUJBIi8+PHBhdGggZD0iTTEzNSAxMzVIMTQ1VjE0NUgxMzVWMTM1WiIgZmlsbD0iI0EwQUVCQSIvPjwvc3ZnPg==";
+                    console.warn(`Failed to load modal image for: ${selectedCategory.title}`);
+                  }}
+                />
+              ) : (
+                <div className="w-full h-[60vh] flex items-center justify-center bg-gray-100 rounded-md mb-4">
+                  <div className="text-gray-400 flex flex-col items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-lg">No image available</p>
+                  </div>
+                </div>
+              )}
               <p className="text-gray-700">{selectedCategory.description}</p>
+              
+              {/* Additional debug information - can be removed in production */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="mt-4 p-4 bg-gray-100 rounded text-xs text-gray-600">
+                  <p className="font-bold">Debug Info:</p>
+                  <p>ID: {selectedCategory._id || selectedCategory.id || 'N/A'}</p>
+                  <p>Image URL: {selectedCategory.image || 'N/A'}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
