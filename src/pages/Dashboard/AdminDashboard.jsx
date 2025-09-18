@@ -6,6 +6,7 @@ import AllUser from "./Tab/allUser";
 import AddNewuser from "./Tab/addNewuser";
 import   { SponsorTab }  from "./Tab/Sponsors";
 import { PartnersTab } from "./Tab/Partners";
+import { AssociateTab } from "./Tab/Associate";
 import { userService } from "../../services/api";
 
 export default function Dashboard() {
@@ -121,6 +122,17 @@ export default function Dashboard() {
             <FaUsers className="text-lg" />
             <span>Partner Management</span>
           </button>
+          <button
+            className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${
+              activeTab === "associate"
+                ? "bg-blue-600 text-white shadow-md"
+                : "hover:bg-blue-50 text-gray-700"
+            }`}
+            onClick={() => setActiveTab("associate")}
+          >
+            <FaUsers className="text-lg" />
+            <span>Associate Management</span>
+          </button>
         </div>
       </div>
 
@@ -137,6 +149,8 @@ export default function Dashboard() {
               ? "Sponsor Management"
               : activeTab === "partner"
               ? "Partner Management"
+              : activeTab === "associate"
+              ? "Associate Management"
               : "User Management"}
           </h1>
           <div className="relative group">
@@ -190,6 +204,7 @@ export default function Dashboard() {
         {activeTab === "banner" && <BannerTab />}
         {activeTab === "sponsor" && <SponsorTab />}
         {activeTab === "partner" && <PartnersTab />}
+        {activeTab === "associate" && <AssociateTab />}
         {activeTab === "user" && (
           <div>
             <div className="flex gap-4 mb-6">

@@ -102,13 +102,24 @@ const SponsorSlider = () => {
             {sponsors.map((sponsor) => (
               <SwiperSlide key={sponsor._id || sponsor.id}>
                 <a href={sponsor.website_url} target="_blank" rel="noopener noreferrer">
-                <div className="bg-white shadow-md p-4 rounded-lg flex items-center justify-center h-40">
-                  <img 
-                    src={sponsor.sponsor_img_url} 
-                    alt={sponsor.sponsor_name} 
-                    className="max-h-full max-w-full object-contain" 
-                  />
-                </div>
+                  <div className="  flex items-center justify-center h-40  hover:shadow-lg transition-all duration-200">
+                    {sponsor.sponsor_img_url ? (
+                      <img
+                        src={sponsor.sponsor_img_url}
+                        alt={sponsor.sponsor_name}
+                        className="max-h-full max-w-full object-contain rounded-md drop-shadow-sm transition-transform duration-200 hover:scale-105"
+                        style={{ background: '#f6f6fa', padding: '8px' }}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center w-full h-full text-gray-400">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.5 14.5l2.5-3 2.5 3M14 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span className="mt-2 text-xs">No Image</span>
+                      </div>
+                    )}
+                  </div>
                 </a>
               </SwiperSlide>
             ))}

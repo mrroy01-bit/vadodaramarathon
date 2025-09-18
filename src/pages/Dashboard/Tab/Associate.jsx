@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, use } from "react";
 import {
   FaCloudUploadAlt,
   FaTrashAlt,
@@ -6,42 +6,55 @@ import {
   FaDownload,
   FaSpinner,
 } from "react-icons/fa";
-import { sponsorService } from "../../../services/api";
+import { associateService } from "../../../services/api";
 
-export function SponsorTab() {
+export function AssociateTab() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [viewMode, setViewMode] = useState("upload");
-  const [sponsorName, setSponsorName] = useState("");
-  const [websiteUrl, setWebsiteUrl] = useState(""); 
+  const [associateName, setAssociateName] = useState(""); 
+  const [websiteUrl, setWebsiteUrl] = useState("");
 
-  const [sponsors, setSponsors] = useState([]);
+  const [associates, setAssociates] = useState([]); 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [selectedSponsor, setSelectedSponsor] = useState(null);
+  const [selectedAssociate, setSelectedAssociate] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Fetch all sponsors
-  const fetchSponsors = useCallback(async () => {
+  // Fetch all associates
+  const fetchAssociates = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await sponsorService.getAllSponsors();
-      const sponsorData = response?.data && Array.isArray(response.data) ? response.data : response;
-      setSponsors(Array.isArray(sponsorData) ? sponsorData : []);
+      const response = await associateService.getAllAssociates();
+      const associateData =
+        response?.data && Array.isArray(response.data)
+          ? response.data
+          : Array.isArray(response) ? response : [];
+      setAssociates(associateData); // Set the array of associates
     } catch (err) {
-      console.error("Error fetching sponsors:", err);
-      setError(err.response?.data?.message || err.message || "Failed to fetch sponsors.");
-      setSponsors([]);
+      console.error("Error fetching associates:", err);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to fetch associates."
+      );
+      setAssociates([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchSponsors();
-  }, [fetchSponsors]);
+    fetchAssociates();
+  }, [fetchAssociates]);
+
+    useEffect(() => {
+    console.log("Rendering associate data:", associates);
+  }, [associates]);
+
+ 
 
   // File selection
   const handleFileChange = (e) => {
@@ -57,66 +70,65 @@ export function SponsorTab() {
     setSelectedFile(null);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
-    setSponsorName("");
+    setAssociateName("");
     setWebsiteUrl("");
     setError(null);
   };
 
-  // Upload sponsor
+  // Upload associate
   const handleUpload = async () => {
-    if (!selectedFile || !sponsorName) {
-      alert("Please provide a sponsor name and select a logo.");
+    if (!selectedFile || !associateName) {
+      alert("Please provide an associate name and select a logo.");
       return;
     }
-
+console.log("Uploading associate:", {  selectedFile });
     setIsLoading(true);
     setError(null);
-
+    
     try {
-      // The service already creates FormData, so we pass an object.
-      const sponsorData = {
-        name: sponsorName,
+      const associateData = {
+        name: associateName, 
         logo: selectedFile,
         website_url: websiteUrl,
       };
 
-      await sponsorService.createSponsor(sponsorData);
+      await associateService.createAssociate(associateData);
       handleReset();
-      await fetchSponsors(); // Refresh the list
-      setViewMode("gallery"); // Switch to gallery view after successful upload
+      await fetchAssociates();
+      setViewMode("gallery");
     } catch (err) {
-      setError(err.response?.data?.error?.message || "Failed to upload sponsor.");
+      setError(
+        err.response?.data?.error?.message || "Failed to upload associate."
+      );
       console.error("Upload Error:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Delete sponsor
-  const deleteSponsor = async (id) => {
-    // Optimistically remove from UI
-    setSponsors((prev) => prev.filter((sponsor) => sponsor._id !== id));
-    if (selectedSponsor?._id === id) setShowModal(false);
+  // Delete associate
+  const deleteAssociate = async (id) => {
+    setAssociates((prev) => prev.filter((associate) => associate._id !== id));
+    if (selectedAssociate?._id === id) setShowModal(false);
 
     try {
-      await sponsorService.deleteSponsor(id);
+      await associateService.deleteAssociate(id);
     } catch (err) {
-      setError("Failed to delete sponsor. It may reappear on refresh.");
+      setError("Failed to delete associate. It may reappear on refresh.");
       console.error(err);
-      fetchSponsors(); // Re-fetch to correct the UI state on failure
+      fetchAssociates();
     }
   };
 
-  const openSponsorDetails = (sponsor) => {
-    setSelectedSponsor(sponsor);
+  const openAssociateDetails = (associate) => {
+    setSelectedAssociate(associate);
     setShowModal(true);
   };
 
-  const closeSponsorDetails = () => setShowModal(false);
+  const closeAssociateDetails = () => setShowModal(false);
 
   return (
     <div className="space-y-6">
-      {/* Toggle Buttons */}
       <div className="bg-white rounded-lg shadow-sm p-2 flex">
         <button
           className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
@@ -126,7 +138,7 @@ export function SponsorTab() {
           }`}
           onClick={() => setViewMode("upload")}
         >
-          Upload Sponsor
+          Upload Associate
         </button>
         <button
           className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
@@ -136,11 +148,10 @@ export function SponsorTab() {
           }`}
           onClick={() => setViewMode("gallery")}
         >
-          View Sponsors
+          View Associates
         </button>
       </div>
 
-      {/* Upload View */}
       {viewMode === "upload" && (
         <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
           {error && (
@@ -170,7 +181,9 @@ export function SponsorTab() {
               <FaCloudUploadAlt className="text-blue-500 text-5xl mb-3" />
             )}
             <p className="text-gray-700 font-medium">
-              {previewUrl ? "Click to change logo" : "Click to upload sponsor logo"}
+              {previewUrl
+                ? "Click to change logo"
+                : "Click to upload associate logo"}
             </p>
             <input
               type="file"
@@ -180,19 +193,17 @@ export function SponsorTab() {
               onChange={handleFileChange}
             />
           </div>
-
           <input
             type="text"
-            value={sponsorName}
-            placeholder="Sponsor Name"
-            onChange={(e) => setSponsorName(e.target.value)}
+            value={associateName}
+            placeholder="Associate Name"
+            onChange={(e) => setAssociateName(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <input
             type="text"
             value={websiteUrl}
-            required
-            placeholder="Sponsor Website URL"
+            placeholder="Associate Website URL (optional)"
             onChange={(e) => setWebsiteUrl(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
@@ -207,15 +218,14 @@ export function SponsorTab() {
             <button
               onClick={handleUpload}
               className="px-6 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 disabled:bg-gray-400"
-              disabled={!selectedFile || !sponsorName || isLoading}
+              disabled={!selectedFile || !associateName || isLoading}
             >
-              {isLoading ? "Uploading..." : "Upload Sponsor"}
+              {isLoading ? "Uploading..." : "Upload Associate"}
             </button>
           </div>
         </div>
       )}
 
-      {/* Gallery View */}
       {viewMode === "gallery" && (
         <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
           {error && (
@@ -226,22 +236,26 @@ export function SponsorTab() {
 
           {isLoading ? (
             <div className="flex items-center justify-center space-x-2 text-gray-600">
-              <FaSpinner className="animate-spin" /> <span>Loading Sponsors...</span>
+              <FaSpinner className="animate-spin" />{" "}
+              <span>Loading Associates...</span>
             </div>
-          ) : sponsors.length === 0 ? (
+          ) : associates.length === 0 ? (
             <div className="text-center text-gray-500">
-              No sponsors found.
+              No associates found.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sponsors.map((sponsor) => {
-                const imageUrl = sponsor.sponsor_img_url || sponsor.logo;
-                const name = sponsor.sponsor_name || "Untitled Sponsor";
-                const website = sponsor.website_url || "";
+              {associates.map((associate) => {
+                // DEBUG: Log the associate object to find the correct image property
                 
+                
+                const imageUrl = associate.associate_img_url || associate.image || associate.imageUrl || associate.logo_url;
+                const name = associate.associate_name || "Untitled Associate";
+                const website = associate.associate_website_url || "";
+
                 return (
                   <div
-                    key={sponsor._id || sponsor.id}
+                    key={associate._id || associate.id}
                     className="border rounded-lg shadow-sm overflow-hidden flex flex-col"
                   >
                     <div className="h-48 w-full bg-gray-100 flex items-center justify-center">
@@ -250,26 +264,48 @@ export function SponsorTab() {
                           src={imageUrl}
                           alt={name}
                           className="h-full w-full object-contain p-4 cursor-pointer"
-                          onClick={() => openSponsorDetails({ ...sponsor, name, imageUrl, website })}
+                          onClick={() =>
+                            openAssociateDetails({
+                              ...associate,
+                              name,
+                              imageUrl,
+                              website,
+                            })
+                          }
+                          onError={(e) => {
+                            // IMPROVED: More helpful error log
+                            console.error(`Failed to load image. URL: ${e.target.src}. Check if the 'imageUrl' variable is using the correct property from the associate object.`);
+                            e.target.style.display = 'none'; 
+                          }}
                         />
                       ) : (
                         <div className="text-gray-400 text-center p-4">
-                           <p className="text-sm">No Logo Available</p>
+                          <p className="text-sm">No Image Provided</p>
                         </div>
                       )}
                     </div>
                     <div className="p-4 flex-grow flex flex-col justify-between">
                       <div>
                         <h4 className="font-semibold text-lg truncate">{name}</h4>
-                        {website && (
-                            <a href={website} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm mt-1 truncate block hover:underline">
-                                {website}
-                            </a>
-                        )}
+                        <a
+                          href={website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 text-sm mt-1 truncate block hover:underline"
+                        >
+                          {website}
+                        </a>
                       </div>
                       <div className="flex justify-end space-x-4 mt-4">
                         <button
-                          onClick={() => openSponsorDetails({ ...sponsor, name, imageUrl, website })}
+                          onClick={() =>
+                            openAssociateDetails({
+                              ...associate,
+                              name,
+                              imageUrl,
+                              website,
+                            })
+                          }
                           className="text-blue-600 hover:text-blue-800"
                           title="View"
                         >
@@ -288,7 +324,9 @@ export function SponsorTab() {
                           </a>
                         )}
                         <button
-                          onClick={() => deleteSponsor(sponsor._id || sponsor.id)}
+                          onClick={() =>
+                            deleteAssociate(associate._id || associate.id)
+                          }
                           className="text-red-600 hover:text-red-800"
                           title="Delete"
                         >
@@ -304,41 +342,35 @@ export function SponsorTab() {
         </div>
       )}
 
-      {/* Modal */}
-      {showModal && selectedSponsor && (
+      {showModal && selectedAssociate && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto flex flex-col">
             <div className="flex justify-between items-center border-b p-4">
-              <h3 className="text-xl font-semibold">
-                {selectedSponsor.name}
-              </h3>
+              <h3 className="text-xl font-semibold">{selectedAssociate.name}</h3>
               <button
-                onClick={closeSponsorDetails}
+                onClick={closeAssociateDetails}
                 className="text-2xl font-light"
               >
                 &times;
               </button>
             </div>
             <div className="p-4">
-              {selectedSponsor.imageUrl ? (
-                <img
-                  src={selectedSponsor.imageUrl}
-                  alt={selectedSponsor.name}
-                  className="w-full object-contain max-h-[60vh] rounded-md mb-4"
-                />
-              ) : (
-                 <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-md mb-4">
-                    <p className="text-gray-500">No Logo Available</p>
-                 </div>
-              )}
-              {selectedSponsor.website && (
-                  <p className="text-gray-700">
-                    <strong>Website:</strong>{" "}
-                    <a href={selectedSponsor.website} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                        {selectedSponsor.website}
-                    </a>
-                  </p>
-              )}
+              <img
+                src={selectedAssociate.imageUrl}
+                alt={selectedAssociate.name}
+                className="w-full object-contain max-h-[60vh] rounded-md mb-4"
+              />
+              <p className="text-gray-700">
+                <strong>Website:</strong>{" "}
+                <a
+                  href={selectedAssociate.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  {selectedAssociate.website}
+                </a>
+              </p>
             </div>
           </div>
         </div>
@@ -346,3 +378,4 @@ export function SponsorTab() {
     </div>
   );
 }
+

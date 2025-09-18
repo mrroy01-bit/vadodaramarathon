@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Header from "../Component/Header";
-import Banner from "../assest/banner.jpg"; // Fallback image
+import Banner from "../assest/banner.jpg"; 
 import VideoCard from "../Component/VideoCard";
 import { heroImageService, raceCategoryService, } from "../services/api";
 import SponsorSlider from "../Component/SponsorSlider";
@@ -19,7 +19,7 @@ const LandingPage = () => {
     const fetchData = async () => {
       setIsLoading(true); // Start loading state
       try {
-        const [ /* heroData */ categoriesData, sponsorsData] = await Promise.all([
+        const [ /* heroData */ categoriesData,] = await Promise.all([
           // heroImageService.getHeroImage(),
           raceCategoryService.getAllCategories(),
         ]);

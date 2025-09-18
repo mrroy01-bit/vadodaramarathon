@@ -189,7 +189,8 @@ export function PartnersTab() {
           <input
             type="text"
             value={websiteUrl}
-            placeholder="Partner Website URL (optional)"
+            required
+            placeholder="Partner Website URL "
             onChange={(e) => setWebsiteUrl(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />

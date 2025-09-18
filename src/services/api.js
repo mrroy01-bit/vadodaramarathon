@@ -27,9 +27,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear token and redirect to login if unauthorized
       setAuthToken(null);
-      // Redirect can be handled here or in the component
     }
     return Promise.reject(error);
   }
@@ -76,7 +74,7 @@ export const raceCategoryService = {
       } else {
         formData = new FormData();
         if (categoryData.file || categoryData.image) {
-          formData.append("image", categoryData.file || categoryData.image); // ✅ ensure 'image'
+          formData.append("image", categoryData.file || categoryData.image); 
         }
         if (categoryData.category_name || categoryData.title) {
           formData.append(
@@ -105,14 +103,11 @@ export const raceCategoryService = {
     try {
       const formData = new FormData();
       if (categoryData.file || categoryData.image) {
-        formData.append("image", categoryData.file || categoryData.image); // ✅ ensure 'image'
+        formData.append("image", categoryData.file || categoryData.image); 
       }
       if (categoryData.title) formData.append("title", categoryData.title);
-      if (categoryData.description)
-        formData.append("description", categoryData.description);
-      if (categoryData.location)
-        formData.append("location", categoryData.location);
-
+      
+      
       const response = await apiClient.put(
         `/api/race-category/update/${id}`,
         formData,
@@ -257,10 +252,7 @@ export const sponsorService = {
     }
   },
 };
-/**
- * This service handles all API requests for partners.
- * It assumes a pre-configured apiClient is available.
- */
+
 export const partnerService = {
   // Fetches all partners from the API.
   getAllPartners: async () => {
@@ -368,6 +360,118 @@ export const partnerService = {
     }
   },
 };
+
+
+/**
+ * This service handles all API requests for associates.
+ * It assumes a pre-configured apiClient is available.
+ */
+export const associateService = {
+  getAllAssociates: async () => {
+    try {
+      const response = await apiClient.get("/api/associates/fetch-all");
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error fetching all associates:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+
+  getAssociateById: async (id) => {
+    try {
+      const response = await apiClient.get(`/api/associates/fetch-by-id/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error fetching associate with ID ${id}:`,
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+
+  createAssociate: async (associateData) => {
+    try {
+      const formData = new FormData();
+
+      // FIX: Re-added associate_name as it's almost certainly a required field.
+      if (associateData.name) {
+        formData.append("associate_name", associateData.name);
+      }
+      if (associateData.logo) {
+        formData.append("associate_img_filename", associateData.logo);
+      }
+      if (associateData.website_url) {
+        formData.append("associate_website_url", associateData.website_url);
+      }
+
+      const response = await apiClient.post("/api/associates", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error creating associate:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+
+  updateAssociate: async (id, associateData) => {
+    try {
+      const formData = new FormData();
+
+      // FIX: Re-added associate_name here as well for consistency.
+      if (associateData.name) {
+        formData.append("associate_name", associateData.name);
+      }
+      if (associateData.logo) {
+        formData.append("associate_img_filename", associateData.logo);
+      }
+      if (associateData.website_url) {
+        formData.append("associate_website_url", associateData.website_url);
+      }
+
+      const response = await apiClient.put(
+        `/api/associates/update/${id}`,
+        formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error updating associate with ID ${id}:`,
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+
+  deleteAssociate: async (id) => {
+    try {
+      const response = await apiClient.delete(`/api/associates/delete/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error deleting associate with ID ${id}:`,
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+};
+
+
+
 
 
 
