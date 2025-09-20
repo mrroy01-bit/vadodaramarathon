@@ -194,14 +194,7 @@ const fetchUsers = async () => {
                       >
                         <FaEye className="text-blue-500" /> View Details
                       </button>
-                      <button
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                      >
-                        <FaUserEdit className="text-green-500" /> Edit Profile
-                      </button>
+                    
                       <button
                         className="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 flex items-center gap-2"
                         onClick={(e) => {
