@@ -38,7 +38,6 @@ export const raceCategoryService = {
   // Get all race categories
   getAllCategories: async () => {
     try {
-     
       const response = await apiClient.get("/api/race-category/fetch-all");
       return response.data;
     } catch (error) {
@@ -74,7 +73,7 @@ export const raceCategoryService = {
       } else {
         formData = new FormData();
         if (categoryData.file || categoryData.image) {
-          formData.append("image", categoryData.file || categoryData.image); 
+          formData.append("image", categoryData.file || categoryData.image);
         }
         if (categoryData.category_name || categoryData.title) {
           formData.append(
@@ -103,11 +102,10 @@ export const raceCategoryService = {
     try {
       const formData = new FormData();
       if (categoryData.file || categoryData.image) {
-        formData.append("image", categoryData.file || categoryData.image); 
+        formData.append("image", categoryData.file || categoryData.image);
       }
       if (categoryData.title) formData.append("title", categoryData.title);
-      
-      
+
       const response = await apiClient.put(
         `/api/race-category/update/${id}`,
         formData,
@@ -135,8 +133,6 @@ export const raceCategoryService = {
     }
   },
 };
-
-
 
 /**
  * Create a new sponsor.
@@ -178,9 +174,7 @@ export const sponsorService = {
       const response = await apiClient.get("/api/sponsors/fetch-all");
       return response.data;
     } catch (error) {
-      console.error(
-        error.response?.data || error.message
-      );
+      console.error(error.response?.data || error.message);
       throw error;
     }
   },
@@ -330,7 +324,8 @@ export const partnerService = {
 
       const response = await apiClient.put(
         `/api/partners/update/${id}`,
-        formData, {
+        formData,
+        {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -360,7 +355,6 @@ export const partnerService = {
     }
   },
 };
-
 
 /**
  * This service handles all API requests for associates.
@@ -440,7 +434,8 @@ export const associateService = {
 
       const response = await apiClient.put(
         `/api/associates/update/${id}`,
-        formData, {
+        formData,
+        {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -469,11 +464,6 @@ export const associateService = {
     }
   },
 };
-
-
-
-
-
 
 // Hero Image services
 export const heroImageService = {
@@ -514,81 +504,81 @@ export const heroImageService = {
   },
 };
 
-// User Profile services - merged into userService
-const userProfileService = {
-  // Get user profile
-  getUserProfile: async () => {
-    try {
-      // Get token from localStorage
-      const token = localStorage.getItem("user_token");
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
+// // User Profile services - merged into userService
+// const userProfileService = {
+//   // Get user profile
+//   getUserProfile: async () => {
+//     try {
+//       // Get token from localStorage
+//       const token = localStorage.getItem("user_token");
+//       if (!token) {
+//         throw new Error("No authentication token found");
+//       }
 
-      const response = await apiClient.get("/api/register/user-profile");
+//       const response = await apiClient.get("/api/register/user-profile");
 
-      // Debug log
+//       // Debug log
 
-      if (!response.data) {
-        throw new Error("No profile data received");
-      }
+//       if (!response.data) {
+//         throw new Error("No profile data received");
+//       }
 
-      let profileData = null;
-      const responseData = response.data;
+//       let profileData = null;
+//       const responseData = response.data;
 
-      // Try different response structures
-      if (responseData.user) {
-        profileData = responseData.user;
-      } else if (responseData.data?.user) {
-        profileData = responseData.data.user;
-      } else if (responseData.data) {
-        profileData = responseData.data;
-      } else {
-        profileData = responseData;
-      }
+//       // Try different response structures
+//       if (responseData.user) {
+//         profileData = responseData.user;
+//       } else if (responseData.data?.user) {
+//         profileData = responseData.data.user;
+//       } else if (responseData.data) {
+//         profileData = responseData.data;
+//       } else {
+//         profileData = responseData;
+//       }
 
-      return {
-        data: profileData,
-        status: response.status,
-      };
-    } catch (error) {
-      console.error("Profile fetch error:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-      });
+//       return {
+//         data: profileData,
+//         status: response.status,
+//       };
+//     } catch (error) {
+//       console.error("Profile fetch error:", {
+//         message: error.message,
+//         response: error.response?.data,
+//         status: error.response?.status,
+//       });
 
-      // Check if it's an auth error
-      if (error.response?.status === 401) {
-        setAuthToken(null); // Clear invalid token
-        throw new Error("Session expired. Please login again.");
-      }
+//       // Check if it's an auth error
+//       if (error.response?.status === 401) {
+//         setAuthToken(null); // Clear invalid token
+//         throw new Error("Session expired. Please login again.");
+//       }
 
-      throw new Error(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to fetch user profile"
-      );
-    }
-  },
+//       throw new Error(
+//         error.response?.data?.message ||
+//           error.message ||
+//           "Failed to fetch user profile"
+//       );
+//     }
+//   },
 
-  // Update user profile
-  updateUserProfile: async (profileData) => {
-    try {
-      const response = await apiClient.put(
-        "/api/register/update-profile",
-        profileData
-      );
-      return {
-        data: response.data.user || response.data.data || response.data,
-        status: response.status,
-      };
-    } catch (error) {
-      console.error("Profile update error:", error);
-      throw error.response?.data || error;
-    }
-  },
-};
+//   // Update user profile
+//   updateUserProfile: async (profileData) => {
+//     try {
+//       const response = await apiClient.put(
+//         "/api/register/update-profile",
+//         profileData
+//       );
+//       return {
+//         data: response.data.user || response.data.data || response.data,
+//         status: response.status,
+//       };
+//     } catch (error) {
+//       console.error("Profile update error:", error);
+//       throw error.response?.data || error;
+//     }
+//   },
+// };
 
 // Authentication services
 export const authService = {
@@ -823,7 +813,7 @@ export const userService = {
   updateUserProfile: async (userId, profileData) => {
     try {
       const response = await apiClient.put(
-        `/api/register/user-profile/${userId}`,
+        `/api/register/update-profile`,
         profileData
       );
       return response.data;
@@ -834,10 +824,11 @@ export const userService = {
     }
   },
 
-  // Delete user
   deleteUser: async (userId) => {
     try {
-      const response = await apiClient.delete(`/api/register/user/${userId}`);
+      const response = await apiClient.delete(
+        `/api/register/delete-user/${userId}`
+      );
       return response.data;
     } catch (error) {
       throw error.response

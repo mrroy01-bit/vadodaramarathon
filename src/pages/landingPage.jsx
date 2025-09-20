@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import Header from "../Component/Header";
 import Banner from "../assest/banner.jpg"; 
 import VideoCard from "../Component/VideoCard";
-import { heroImageService, raceCategoryService, } from "../services/api";
+import { /*.heroImageService,*/ raceCategoryService, } from "../services/api";
 import SponsorSlider from "../Component/SponsorSlider";
 import ValuablePartners from "../Component/ValuedPartners";
 import ValuableAssociates from "../Component/ValuableAssociates";
@@ -67,6 +68,7 @@ const LandingPage = () => {
 
       {/* Banner Section */}
       <div className="banner">
+        <Link to="/register">
         <div className="overlay relative">
           {isLoading ? (
             <div className="w-full h-64 sm:h-96 bg-gray-200 animate-pulse"></div>
@@ -86,6 +88,7 @@ const LandingPage = () => {
             Click Here To Register
           </button>
         </div>
+        </Link>
       </div>
 
       {/* Hero Text Section */}

@@ -31,6 +31,7 @@ export default function Dashboard() {
             <span>Banner Management</span>
           </button>
         
+      
         </div>
       </div>
 
@@ -44,6 +45,7 @@ export default function Dashboard() {
               : activeTab === "banner"
               ? "Banner Management"
               : "User Management"}
+
           </h1>
           <div className="relative group">
             <div className="flex items-center gap-2 cursor-pointer p-2 rounded-full hover:bg-gray-100">
@@ -65,7 +67,6 @@ export default function Dashboard() {
 
         {/* Dynamic Tab Content */}
         {activeTab === "banner" && <BannerTab />}
-       
       </div>
     </div>
   );

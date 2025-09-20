@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaUserCircle, FaEdit, FaSave, FaTimes, FaCamera, FaSpinner } from 'react-icons/fa';
 import { userService } from '../../../services/api';
-import { getUserFromToken } from '../../../services/auth';
 
 const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -10,6 +9,7 @@ const UserProfile = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [formData, setFormData] = useState({
+    id: '', // FIX: Added id to store the user's ID
     firstName: '',
     lastName: '',
     email: '',
@@ -18,22 +18,18 @@ const UserProfile = () => {
     gender: '',
   });
 
-  // Get user data from token (optional use later)
-
-
   useEffect(() => {
     const fetchUserProfile = async () => {
       setLoading(true);
       setError(null);
       try {
         const response = await userService.getUserProfile();
-        console.log('Profile response:', response);
 
         const data = response?.data || response;
 
         if (data) {
-          // ✅ map backend → frontend
           const profileData = {
+            id: data._id || data.id || '', // FIX: Mapped the user ID from the API response
             firstName: data.firstName || data.fname || '',
             lastName: data.lastName || data.lname || '',
             email: data.email || '',
@@ -105,7 +101,7 @@ const UserProfile = () => {
     }
 
     try {
-      // ✅ map frontend → backend
+      // map frontend → backend
       const profileData = {
         fname: formData.firstName,
         lname: formData.lastName,
@@ -119,7 +115,8 @@ const UserProfile = () => {
         Object.entries(profileData).filter(([_, value]) => value !== '' && value !== undefined)
       );
 
-      const response = await userService.updateUserProfile(cleanedFormData);
+      // FIX: Passed formData.id as the first argument to match the API service definition
+      const response = await userService.updateUserProfile(formData.id, cleanedFormData);
 
       setSuccess('Profile updated successfully!');
       setIsEditing(false);
@@ -128,6 +125,7 @@ const UserProfile = () => {
       const updatedData = response?.data || (await userService.getUserProfile());
       if (updatedData) {
         const newProfileData = {
+          id: updatedData._id || updatedData.id || formData.id, // Keep the ID
           firstName: updatedData.firstName || updatedData.fname || '',
           lastName: updatedData.lastName || updatedData.lname || '',
           email: updatedData.email || '',
@@ -148,7 +146,8 @@ const UserProfile = () => {
       );
     } finally {
       setSaving(false);
-      if (success) setTimeout(() => setSuccess(null), 3000);
+      // Use a function callback with setTimeout to avoid stale state issues
+      setTimeout(() => setSuccess(null), 3000);
     }
   };
 

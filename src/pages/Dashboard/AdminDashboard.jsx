@@ -4,12 +4,15 @@ import  BannerTab  from "./Tab/Banner";
 import { FaUserCircle, FaImages, FaImage, FaUsers, FaUserPlus, FaSpinner } from "react-icons/fa";
 import AllUser from "./Tab/allUser";
 import AddNewuser from "./Tab/addNewuser";
+import { setAuthToken } from "../../services/auth";
 import   { SponsorTab }  from "./Tab/Sponsors";
 import { PartnersTab } from "./Tab/Partners";
 import { AssociateTab } from "./Tab/Associate";
 import { userService } from "../../services/api";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("race");
   const [userTab, setUserTab] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -58,6 +61,10 @@ export default function Dashboard() {
     fetchAdminProfile();
   }, []);
 
+ const handleSignOut = () => {
+    setAuthToken(null);
+    navigate("/admin-login");
+  };
   return (
     <div className="min-h-screen flex bg-gray-50">
       {/* Sidebar */}
@@ -187,11 +194,7 @@ export default function Dashboard() {
               </div>
               <button 
                 className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded"
-                onClick={() => {
-                  // Add logout logic here
-                  localStorage.removeItem('userProfile');
-                  // Redirect to login page or handle logout
-                }}
+                onClick={handleSignOut}
               >
                 Sign Out
               </button>

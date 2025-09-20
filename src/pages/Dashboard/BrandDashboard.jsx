@@ -1,14 +1,20 @@
 import React, { useState } from "react";
-import { FaUserCircle, FaUserEdit } from "react-icons/fa";
+import { FaUserCircle, FaUserEdit,FaImage } from "react-icons/fa";
 import UserViews from "./Tab/UserViews";
+import  MailForm  from "./Tab/mailBox";
+import { useNavigate } from "react-router-dom";
 
 export default function BrandDashboard() {
+    const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState("userView");
   const user = {
     name: "Brand User",
     email: "brand@example.com",
   };
-
+ const handleSignOut = () => {
+    navigate("/admin-login");
+  };
   return (
     <div className="min-h-screen flex bg-gray-50">
       {/* Sidebar */}
@@ -29,6 +35,17 @@ export default function BrandDashboard() {
           >
             <FaUserEdit className="text-lg" />
             <span>User Profile</span>
+          </button>
+          <button
+            className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${
+              activeTab === "mail"
+                ? "bg-blue-600 text-white shadow-md"
+                : "hover:bg-blue-50 text-gray-700"
+            }`}
+            onClick={() => setActiveTab("mail")}
+          >
+            <FaImage className="text-lg" />
+            <span>Mail Box</span>
           </button>
         </div>
       </div>
@@ -51,7 +68,9 @@ export default function BrandDashboard() {
                 <p className="text-sm font-medium">{user.name}</p>
                 <p className="text-xs text-gray-600">{user.email}</p>
               </div>
-              <button className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded">
+              <button
+                onClick={handleSignOut}
+               className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded">
                 Sign Out
               </button>
             </div>
@@ -60,6 +79,7 @@ export default function BrandDashboard() {
 
         {/* Dynamic Tab Content */}
         {activeTab === "userView" && <UserViews />}
+        {activeTab === "mail" && <MailForm />}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { authService, userProfileService } from "../../../services/api";
@@ -55,9 +55,7 @@ export default function AdminLogin() {
       setUserData(user);
       
       // 6. Extract role from user data
-      const userRole = user.role ? user.role.toLowerCase() : 
-                      user.ROLE ? user.ROLE.toLowerCase() :
-                      null;
+      const userRole = user.role || user.ROLE;
 
       console.log("User role:", userRole); // Debug log
 
@@ -65,8 +63,13 @@ export default function AdminLogin() {
         throw new Error("User role not found in response");
       }
 
-      // 7. Redirect based on role
-      switch (userRole) {
+      // 7. Save user role for ProtectedRoute
+      localStorage.setItem('userRole', userRole);
+      console.log('Admin role saved:', userRole);
+
+      // 8. Redirect based on role
+      const roleLower = userRole.toLowerCase();
+      switch (roleLower) {
         case "admin":
           navigate("/admin/dashboard");
           break;

@@ -30,16 +30,12 @@ const fetchUsers = async () => {
     let usersList = [];
 
     if (Array.isArray(response)) {
-      // Direct array
       usersList = response;
     } else if (response?.data && Array.isArray(response.data)) {
-      // { data: [...] }
       usersList = response.data;
     } else if (response?.users && Array.isArray(response.users)) {
-      // { users: [...] }
       usersList = response.users;
     } else if (response && typeof response === "object" && response._id) {
-      // Single user object
       usersList = [response];
     }
 
@@ -78,9 +74,9 @@ const fetchUsers = async () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) {
-      return;
-    }
+    // if (!window.confirm('Are you sure you want to delete this user?')) {
+    //   return;
+    // }
 
     try {
       setLoading(true);
@@ -202,7 +198,6 @@ const fetchUsers = async () => {
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // TODO: Add edit modal
                         }}
                       >
                         <FaUserEdit className="text-green-500" /> Edit Profile

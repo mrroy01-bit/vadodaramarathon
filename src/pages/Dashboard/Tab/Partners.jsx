@@ -6,20 +6,20 @@ import {
   FaDownload,
   FaSpinner,
 } from "react-icons/fa";
-import { partnerService } from "../../../services/api"; // Corrected import
+import { partnerService } from "../../../services/api"; 
 
 export function PartnersTab() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [viewMode, setViewMode] = useState("upload");
-  const [partnerName, setPartnerName] = useState(""); // Renamed state
+  const [partnerName, setPartnerName] = useState(""); 
   const [websiteUrl, setWebsiteUrl] = useState("");
 
-  const [partners, setPartners] = useState([]); // Renamed state
+  const [partners, setPartners] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [selectedPartner, setSelectedPartner] = useState(null); // Renamed state
+  const [selectedPartner, setSelectedPartner] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
   // Fetch all partners

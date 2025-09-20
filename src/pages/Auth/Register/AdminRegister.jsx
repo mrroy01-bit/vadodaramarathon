@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  FaEye,
-  FaEyeSlash,
-} from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { authService } from "../../../services/api";
 
 export default function AdminRegister() {
@@ -25,8 +22,6 @@ export default function AdminRegister() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
-
- 
 
   const genders = [
     { id: "male", label: "Male" },
@@ -154,196 +149,245 @@ export default function AdminRegister() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* First Name */}
-          <div>
-            <label className="block text-sm font-medium">First Name</label>
-            <input
-              type="text"
-              name="firstName"
-              className="w-full border p-2 rounded"
-              value={formData.firstName}
-              onChange={handleChange}
-            />
-            {errors.firstName && (
-              <p className="text-red-500 text-sm">{errors.firstName}</p>
-            )}
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-6xl bg-white rounded-2xl shadow-lg overflow-hidden grid md:grid-cols-2 border border-gray-100">
+        {/* Left Illustration */}
+        <div className="hidden md:flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50 p-8">
+          <img
+            src="https://cdn1.iconfinder.com/data/icons/open-doodles/1024/RunningDoodle-512.png"
+            alt="Admin Register Illustration"
+            className="w-80 h-80 object-contain animate-pulse"
+          />
+        </div>
 
-          {/* Last Name */}
-          <div>
-            <label className="block text-sm font-medium">Last Name</label>
-            <input
-              type="text"
-              name="lastName"
-              className="w-full border p-2 rounded"
-              value={formData.lastName}
-              onChange={handleChange}
-            />
-            {errors.lastName && (
-              <p className="text-red-500 text-sm">{errors.lastName}</p>
-            )}
-          </div>
+        {/* Right Form */}
+        <div className="p-8 md:p-10">
+          <h2 className="text-3xl font-bold text-gray-800 text-center mb-2">
+            Admin Registration
+          </h2>
+          <p className="text-center text-gray-500 mb-8">
+            Create your account to manage and explore
+          </p>
 
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium">Email</label>
-            <input
-              type="email"
-              name="email"
-              className="w-full border p-2 rounded"
-              value={formData.email}
-              onChange={handleChange}
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email}</p>
-            )}
-          </div>
-
-          {/* Phone */}
-          <div>
-            <label className="block text-sm font-medium">Phone</label>
-            <input
-              type="text"
-              name="phone"
-              className="w-full border p-2 rounded"
-              value={formData.phone}
-              onChange={handleChange}
-            />
-            {errors.phone && (
-              <p className="text-red-500 text-sm">{errors.phone}</p>
-            )}
-          </div>
-
-          {/* Date of Birth */}
-          <div>
-            <label className="block text-sm font-medium">Date of Birth</label>
-            <input
-              type="date"
-              name="dob"
-              className="w-full border p-2 rounded"
-              value={formData.dob}
-              onChange={handleChange}
-            />
-            {errors.dob && (
-              <p className="text-red-500 text-sm">{errors.dob}</p>
-            )}
-          </div>
-
-          {/* Gender */}
-          <div>
-            <label className="block text-sm font-medium">Gender</label>
-            <select
-              name="gender"
-              className="w-full border p-2 rounded"
-              value={formData.gender}
-              onChange={handleChange}
-            >
-              <option value="">Select Gender</option>
-              {genders.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.label}
-                </option>
-              ))}
-            </select>
-            {errors.gender && (
-              <p className="text-red-500 text-sm">{errors.gender}</p>
-            )}
-          </div>
-
-          {/* Role */}
-          <div>
-            <label className="block text-sm font-medium">Role</label>
-            <select
-              name="role"
-              className="w-full border p-2 rounded"
-              value={formData.role}
-              onChange={handleChange}
-            >
-              <option value="">Select Role</option>
-              <option value="Admin">Admin</option>
-              <option value="Brand">Brand</option>
-              <option value="Sponsor">Sponsor</option>
-              <option value="User">User</option>
-            </select>
-            {errors.role && (
-              <p className="text-red-500 text-sm">{errors.role}</p>
-            )}
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium">Password</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                className="w-full border p-2 rounded"
-                value={formData.password}
-                onChange={handleChange}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-2 text-gray-500"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
-            </div>
-            {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password}</p>
-            )}
-          </div>
-
-          {/* Confirm Password */}
-          <div>
-            <label className="block text-sm font-medium">
-              Confirm Password
-            </label>
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                className="w-full border p-2 rounded"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-2 text-gray-500"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
-            )}
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          <form
+            onSubmit={handleSubmit}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
-            {loading ? "Registering..." : "Register"}
-          </button>
-        </form>
+            {/* First Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                First Name
+              </label>
+              <input
+                type="text"
+                name="firstName"
+                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2"
+                value={formData.firstName}
+                onChange={handleChange}
+              />
+              {errors.firstName && (
+                <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
+              )}
+            </div>
 
-        {apiError && (
-          <p className="text-red-500 text-center mt-4">{apiError}</p>
-        )}
+            {/* Last Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Last Name
+              </label>
+              <input
+                type="text"
+                name="lastName"
+                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2"
+                value={formData.lastName}
+                onChange={handleChange}
+              />
+              {errors.lastName && (
+                <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
+              )}
+            </div>
 
-        <p className="text-center mt-4 text-sm">
-          Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">
-            Login
-          </Link>
-        </p>
+            {/* Email */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2"
+                value={formData.email}
+                onChange={handleChange}
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone
+              </label>
+              <input
+                type="text"
+                name="phone"
+                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+              {errors.phone && (
+                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+              )}
+            </div>
+
+            {/* Date of Birth */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date of Birth
+              </label>
+              <input
+                type="date"
+                name="dob"
+                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2"
+                value={formData.dob}
+                onChange={handleChange}
+              />
+              {errors.dob && (
+                <p className="text-red-500 text-sm mt-1">{errors.dob}</p>
+              )}
+            </div>
+
+            {/* Gender */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Gender
+              </label>
+              <select
+                name="gender"
+                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2"
+                value={formData.gender}
+                onChange={handleChange}
+              >
+                <option value="">Select Gender</option>
+                {genders.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.label}
+                  </option>
+                ))}
+              </select>
+              {errors.gender && (
+                <p className="text-red-500 text-sm mt-1">{errors.gender}</p>
+              )}
+            </div>
+
+            {/* Role */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Role
+              </label>
+              <select
+                name="role"
+                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2"
+                value={formData.role}
+                onChange={handleChange}
+              >
+                <option value="">Select Role</option>
+                <option value="Admin">Admin</option>
+                <option value="Brand">Brand</option>
+                <option value="Sponsor">Sponsor</option>
+              </select>
+              {errors.role && (
+                <p className="text-red-500 text-sm mt-1">{errors.role}</p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2 pr-10"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-2.5 text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2 pr-10"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-2.5 text-gray-500"
+                  onClick={() =>
+                    setShowConfirmPassword(!showConfirmPassword)
+                  }
+                >
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.confirmPassword}
+                </p>
+              )}
+            </div>
+
+            {/* Submit */}
+            <div className="md:col-span-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all ${
+                  loading
+                    ? "opacity-70 cursor-not-allowed"
+                    : "hover:scale-[1.01]"
+                }`}
+              >
+                {loading ? "Registering..." : "Register"}
+              </button>
+            </div>
+          </form>
+
+          {apiError && (
+            <p className="text-red-500 text-center mt-4">{apiError}</p>
+          )}
+
+          <p className="text-center mt-6 text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link
+              to="/admin-login"
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Login
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
