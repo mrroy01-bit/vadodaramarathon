@@ -837,3 +837,143 @@ export const userService = {
     }
   },
 };
+
+export const pastEventService = {
+  // Add a new past event
+  add: async (eventData) => {
+    try {
+      // Send data as JSON instead of FormData
+      const response = await apiClient.post("/api/past-events/add", eventData, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error("Error adding past event:", error.response?.data || error);
+      throw error;
+    }
+  },
+
+  // Get all past events
+  getAll: async () => {
+    try {
+      const response = await apiClient.get("/api/past-events/all");
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error fetching all past events:",
+        error.response?.data || error
+      );
+      throw error;
+    }
+  },
+
+  // Get a single past event by ID
+  getById: async (id) => {
+    try {
+      const response = await apiClient.get(`/api/past-events/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error fetching past event ${id}:`,
+        error.response?.data || error
+      );
+      throw error;
+    }
+  },
+
+  // Update a past event by ID
+  update: async (id, eventData) => {
+    try {
+      // Send data as JSON instead of FormData
+      const response = await apiClient.put(
+        `/api/past-events/update/${id}`,
+        eventData,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error updating past event ${id}:`,
+        error.response?.data || error
+      );
+      throw error;
+    }
+  },
+
+  // Delete a past event by ID
+  delete: async (id) => {
+    try {
+      const response = await apiClient.delete(`/api/past-events/delete/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error deleting past event ${id}:`,
+        error.response?.data || error
+      );
+      throw error;
+    }
+  },
+};
+
+export const faqService = {
+  // Add new FAQ
+  add: async (faqData) => {
+    try {
+      const response = await apiClient.post("/api/faq/add", faqData, {
+        headers: { "Content-Type": "application/json" },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error adding FAQ:", error.response?.data || error);
+      throw error;
+    }
+  },
+
+  // Get all FAQs
+  getAll: async () => {
+    try {
+      const response = await apiClient.get("/api/faq/all");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching FAQs:", error.response?.data || error);
+      throw error;
+    }
+  },
+
+  // Get FAQ by ID
+  getById: async (id) => {
+    try {
+      const response = await apiClient.get(`/api/faq/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching FAQ ${id}:`, error.response?.data || error);
+      throw error;
+    }
+  },
+
+  // Update FAQ by ID
+  update: async (id, faqData) => {
+    try {
+      const response = await apiClient.put(`/api/faq/update/${id}`, faqData, {
+        headers: { "Content-Type": "application/json" },
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating FAQ ${id}:`, error.response?.data || error);
+      throw error;
+    }
+  },
+
+  // Delete FAQ by ID
+  delete: async (id) => {
+    try {
+      const response = await apiClient.delete(`/api/faq/delete/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error deleting FAQ ${id}:`, error.response?.data || error);
+      throw error;
+    }
+  },
+};
