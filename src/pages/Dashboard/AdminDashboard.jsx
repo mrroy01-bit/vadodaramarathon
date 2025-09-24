@@ -67,6 +67,20 @@ export default function Dashboard() {
     setAuthToken(null);
     navigate("/admin-login");
   };
+ const tabs = [
+    { id: "race", icon: <FaImages />, label: "Photo Gallery" },
+    { id: "banner", icon: <FaImage />, label: "Banner Management" },
+    { id: "sponsor", icon: <FaImage />, label: "Sponsor Management" },
+    { id: "user", icon: <FaUsers />, label: "User Management" },
+    { id: "partner", icon: <FaImage />, label: "Partner Management" },
+    { id: "associate", icon: <FaImage />, label: "Associate Management" },
+    { id: "blog", icon: <TfiWrite />, label: "Blog Management" },
+    { id: "eventfqu", icon: <TfiWrite />, label: "Events & FAQs" },
+  ];
+  
+
+  
+
   return (
     <div className="min-h-screen flex bg-gray-100">
       {/* Sidebar */}
