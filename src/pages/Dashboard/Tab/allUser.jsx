@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { EllipsisVertical } from 'lucide-react';
 import { userService } from '../../../services/api';
-import { FaSpinner, FaUserEdit, FaTrash, FaEye } from 'react-icons/fa';
+import { FaSpinner, FaTrash, FaEye } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const AllUser = () => {
