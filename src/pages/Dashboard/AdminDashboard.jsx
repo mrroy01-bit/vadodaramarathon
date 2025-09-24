@@ -62,8 +62,9 @@ export default function Dashboard() {
   }, []);
 
  const handleSignOut = () => {
-    setAuthToken(null);
-    navigate("/admin-login");
+  setAuthToken(null);
+  localStorage.clear(); 
+  navigate("/admin-login");
   };
   return (
     <div className="min-h-screen flex bg-gray-50">

@@ -1,7 +1,7 @@
 import React, { useState, } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import { authService, userProfileService } from "../../../services/api";
+import { authService,  } from "../../../services/api";
 import { setAuthToken } from "../../../services/auth";
 
 export default function AdminLogin() {
@@ -10,7 +10,7 @@ export default function AdminLogin() {
     password: "",
   });
 
-  const [userData, setUserData] = useState(null);
+  const [/*userData*/, setUserData] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

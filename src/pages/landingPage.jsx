@@ -11,9 +11,9 @@ import Footer from "../Component/Footer/Footer";
 import { FaClipboardList, FaQuestionCircle, FaMoneyCheckAlt } from "react-icons/fa";
 
 const LandingPage = () => {
-  const [heroImage, setHeroImage] = useState(null);
+  const [heroImage,/* setHeroImage*/] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [/*error*/, setError] = useState(null);
   const [raceCategories, setRaceCategories] = useState([]);
 
   useEffect(() => {
