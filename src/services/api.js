@@ -1,7 +1,6 @@
 import axios from "axios";
 import { setAuthToken, getAuthHeader } from "./auth";
 
-// Base URL for API calls - you'll need to set this in your environment variables or config
 const BASE_URL =
   process.env.REACT_APP_API_BASE_URL || "http://13.235.254.156:4000";
 
@@ -35,7 +34,6 @@ apiClient.interceptors.response.use(
 
 // Race Category services
 export const raceCategoryService = {
-  // Get all race categories
   getAllCategories: async () => {
     try {
       const response = await apiClient.get("/api/race-category/fetch-all");
@@ -504,81 +502,33 @@ export const heroImageService = {
   },
 };
 
-// // User Profile services - merged into userService
-// const userProfileService = {
-//   // Get user profile
-//   getUserProfile: async () => {
-//     try {
-//       // Get token from localStorage
-//       const token = localStorage.getItem("user_token");
-//       if (!token) {
-//         throw new Error("No authentication token found");
-//       }
-
-//       const response = await apiClient.get("/api/register/user-profile");
-
-//       // Debug log
-
-//       if (!response.data) {
-//         throw new Error("No profile data received");
-//       }
-
-//       let profileData = null;
-//       const responseData = response.data;
-
-//       // Try different response structures
-//       if (responseData.user) {
-//         profileData = responseData.user;
-//       } else if (responseData.data?.user) {
-//         profileData = responseData.data.user;
-//       } else if (responseData.data) {
-//         profileData = responseData.data;
-//       } else {
-//         profileData = responseData;
-//       }
-
-//       return {
-//         data: profileData,
-//         status: response.status,
-//       };
-//     } catch (error) {
-//       console.error("Profile fetch error:", {
-//         message: error.message,
-//         response: error.response?.data,
-//         status: error.response?.status,
-//       });
-
-//       // Check if it's an auth error
-//       if (error.response?.status === 401) {
-//         setAuthToken(null); // Clear invalid token
-//         throw new Error("Session expired. Please login again.");
-//       }
-
-//       throw new Error(
-//         error.response?.data?.message ||
-//           error.message ||
-//           "Failed to fetch user profile"
-//       );
-//     }
-//   },
-
-//   // Update user profile
-//   updateUserProfile: async (profileData) => {
-//     try {
-//       const response = await apiClient.put(
-//         "/api/register/update-profile",
-//         profileData
-//       );
-//       return {
-//         data: response.data.user || response.data.data || response.data,
-//         status: response.status,
-//       };
-//     } catch (error) {
-//       console.error("Profile update error:", error);
-//       throw error.response?.data || error;
-//     }
-//   },
-// };
+// Image Upload Service for EditorJS
+export const imageUploadService = {
+  uploadImage: async (file, page) => {
+    // Temporarily avoid server upload to prevent CORS/ERR_NETWORK issues.
+    // Convert to base64 so images render in the editor immediately.
+    return new Promise((resolve, reject) => {
+      try {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          resolve({
+            success: 1,
+            file: {
+              url: e.target.result,
+              name: file.name,
+              size: file.size,
+            },
+          });
+        };
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error("Base64 conversion failed:", error);
+        reject(error);
+      }
+    });
+  },
+};
 
 // Authentication services
 export const authService = {
@@ -590,15 +540,11 @@ export const authService = {
         throw new Error("Email and password are required");
       }
 
-      // Log the request payload (without sensitive data)
-
       // Make the login request
       const response = await apiClient.post("/api/login", {
         email: credentials.email,
         password: credentials.password,
       });
-
-      // Debug log (without sensitive data)
 
       // Ensure we have the required data
       if (!response.data) {
@@ -975,5 +921,76 @@ export const faqService = {
       console.error(`Error deleting FAQ ${id}:`, error.response?.data || error);
       throw error;
     }
+  },
+};
+
+export const knowUsService = {
+  add: async (data) => {
+    const res = await apiClient.post("/api/know-us/add", data);
+    return res.data;
+  },
+  getAll: async () => {
+    const res = await apiClient.get("/api/know-us/all");
+    return res.data;
+  },
+  getById: async (id) => {
+    const res = await apiClient.get(`/api/know-us/${id}`);
+    return res.data;
+  },
+  update: async (id, data) => {
+    const res = await apiClient.put(`/api/know-us/${id}`, data);
+    return res.data;
+  },
+  remove: async (id) => {
+    const res = await apiClient.delete(`/api/know-us/${id}`);
+    return res.data;
+  },
+};
+
+// --- Philanthropy Service ---
+export const philanthropyService = {
+  add: async (data) => {
+    const res = await apiClient.post("/api/philanthropy/add", data);
+    return res.data;
+  },
+  getAll: async () => {
+    const res = await apiClient.get("/api/philanthropy/all");
+    return res.data;
+  },
+  getById: async (id) => {
+    const res = await apiClient.get(`/api/philanthropy/${id}`);
+    return res.data;
+  },
+  update: async (id, data) => {
+    const res = await apiClient.put(`/api/philanthropy/${id}`, data);
+    return res.data;
+  },
+  remove: async (id) => {
+    const res = await apiClient.delete(`/api/philanthropy/${id}`);
+    return res.data;
+  },
+};
+
+// --- Causes Service ---
+export const causesService = {
+  add: async (data) => {
+    const res = await apiClient.post("/api/causes/add", data);
+    return res.data;
+  },
+  getAll: async () => {
+    const res = await apiClient.get("/api/causes/all");
+    return res.data;
+  },
+  getById: async (id) => {
+    const res = await apiClient.get(`/api/causes/${id}`);
+    return res.data;
+  },
+  update: async (id, data) => {
+    const res = await apiClient.put(`/api/causes/${id}`, data);
+    return res.data;
+  },
+  remove: async (id) => {
+    const res = await apiClient.delete(`/api/causes/${id}`);
+    return res.data;
   },
 };
