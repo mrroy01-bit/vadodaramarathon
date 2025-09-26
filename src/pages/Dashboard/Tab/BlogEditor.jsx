@@ -464,7 +464,7 @@ const BlogEditor = () => {
             }
           }
 
-          throw serviceError; 
+          throw serviceError;
         }
         toast.success(
           `${

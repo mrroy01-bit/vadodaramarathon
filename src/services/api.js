@@ -505,10 +505,39 @@ export const heroImageService = {
 // Image Upload Service for EditorJS
 export const imageUploadService = {
   uploadImage: async (file, page) => {
-    // Temporarily avoid server upload to prevent CORS/ERR_NETWORK issues.
-    // Convert to base64 so images render in the editor immediately.
-    return new Promise((resolve, reject) => {
-      try {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      // Only 2 routes available
+      let route;
+      if (page === "philanthropy") {
+        route = "/api/philanthropy/add";
+      } else if (page === "know-us") {
+        route = "/api/know-us/add";
+      } else {
+        throw new Error(`No upload API for page: ${page}`);
+      }
+
+      const response = await apiClient.post(route, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      return {
+        success: 1,
+        file: {
+          url: response.data.url || response.data.file?.url,
+          name: file.name,
+          size: file.size,
+        },
+      };
+    } catch (error) {
+      console.error("Upload image error:", error.response?.data || error);
+
+      // Fallback to base64 preview
+      return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
           resolve({
@@ -520,13 +549,9 @@ export const imageUploadService = {
             },
           });
         };
-        reader.onerror = (e) => reject(e);
         reader.readAsDataURL(file);
-      } catch (error) {
-        console.error("Base64 conversion failed:", error);
-        reject(error);
-      }
-    });
+      });
+    }
   },
 };
 
