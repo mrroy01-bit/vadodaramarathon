@@ -33,16 +33,11 @@ const BlogEditor = () => {
   const [, setMobileLayouts] = useRecoilState(mobileLayoutStateAtom);
 
   const [selectedPage, setSelectedPage] = useState("");
-  const selectedPageRef = useRef("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const mobileLayoutHandlerRef = useRef(null);
-
-  useEffect(() => {
-    selectedPageRef.current = selectedPage;
-  }, [selectedPage]);
 
   useEffect(() => {
     const blogEditorId = "blog-editor"; // Use a constant ID for this editor
@@ -62,98 +57,89 @@ const BlogEditor = () => {
                 config: {
                   uploader: {
                     /**
-                     * Upload file to server or fallback
-                     * @param {File} file
-                     * @returns {Promise<{success: number, file: {url: string}}>}
+                     * Upload file to the server and return an uploaded image data
+                     * @param {File} file - file selected from the device or pasted by drag-n-drop
+                     * @return {Promise.<{success, file: {url}}>}
+                     */
+                    // uploadByFile: async (file) => {
+                    //   try {
+                    //     const response = await imageUploadService.uploadImage(
+                    //       file
+                    //     );
+                    //     // Make sure response has success and file
+                    //     return {
+                    //       success: 1,
+                    //       file: {
+                    //         url: response.url, // adjust based on your API
+                    //         name: file.name,
+                    //         size: file.size,
+                    //       },
+                    //     };
+                    //   } catch (error) {
+                    //     console.error("Image upload failed:", error);
+                    //     // fallback to local file reader
+                    //     return new Promise((resolve) => {
+                    //       const reader = new FileReader();
+                    //       reader.onload = (e) => {
+                    //         resolve({
+                    //           success: 1,
+                    //           file: {
+                    //             url: e.target.result,
+                    //             name: file.name,
+                    //             size: file.size,
+                    //           },
+                    //         });
+                    //       };
+                    //       reader.readAsDataURL(file);
+                    //     });
+                    //   }
+                    // },
+
+                    /**
+                     * Send URL-string to the server. Backend should load image by this URL and return an uploaded image data
+                     * @param {string} url - pasted image URL
+                     * @return {Promise.<{success, file: {url}}>}
                      */
                     uploadByFile: async (file) => {
                       try {
-                        const currentPage = selectedPageRef.current;
-                        if (!currentPage) {
-                          toast.warning(
-                            "Please select a page first to enable image uploads",
-                            { position: "top-center", autoClose: 3000 }
-                          );
-                          // Cancel image block creation
-                          return { success: 0 };
-                        }
-
-                        // Try uploading via API
-                        const result = await imageUploadService.uploadImage(
-                          file,
-                          currentPage
+                        const response = await imageUploadService.uploadImage(
+                          file
                         );
+                        console.log("Raw image upload response:", response);
 
-                        // Be resilient to different API response shapes
-                        const imageUrl =
-                          result?.file?.url ||
-                          result?.file?.secure_url ||
-                          result?.url ||
-                          result?.secure_url ||
-                          result?.Location ||
-                          result?.location ||
-                          result?.data?.file?.url ||
-                          result?.data?.file?.secure_url ||
-                          result?.data?.url ||
-                          result?.data?.secure_url ||
-                          result?.data?.imageUrl ||
-                          result?.data?.imageURL ||
-                          result?.data?.location ||
-                          result?.data?.Location ||
-                          result?.data?.path ||
-                          result?.path ||
-                          "";
-
-                        if (!imageUrl) {
-                          throw new Error(
-                            "Image URL not found in upload response"
-                          );
+                        // Ensure response and response.url exist
+                        if (!response || !response.url) {
+                          throw new Error("Invalid image upload response");
                         }
 
                         return {
                           success: 1,
                           file: {
-                            url: imageUrl,
+                            url: response.url,
                             name: file.name,
                             size: file.size,
                           },
                         };
-                      } catch (err) {
-                        console.error("Image upload failed:", err);
-                        toast.error("Image upload failed. Please try again.");
-                        // Cancel image block creation
-                        return { success: 0 };
+                      } catch (error) {
+                        console.error("Image upload failed:", error);
+
+                        // Fallback to local file reader
+                        return new Promise((resolve) => {
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            resolve({
+                              success: 1,
+                              file: {
+                                url: e.target.result,
+                                name: file.name,
+                                size: file.size,
+                              },
+                            });
+                          };
+                          reader.readAsDataURL(file);
+                        });
                       }
                     },
-
-                    /**
-                     * Upload via pasted URL
-                     * @param {string} url
-                     * @returns {Promise<{success: number, file: {url: string}}>}
-                     */
-                    uploadByUrl: async (url) => {
-                      const currentPage = selectedPageRef.current;
-                      if (!currentPage) {
-                        toast.warning(
-                          "Please select a page first to enable image uploads",
-                          { position: "top-center", autoClose: 3000 }
-                        );
-                        return { success: 0 };
-                      }
-                      if (!url) {
-                        toast.error("Invalid image URL");
-                        return { success: 0 };
-                      }
-                      return {
-                        success: 1,
-                        file: { url },
-                      };
-                    },
-                  },
-
-                  // Use `rendered` hook instead of deprecated `appendCallback`
-                  onRendered: (block) => {
-                    console.log("Image block rendered:", block);
                   },
                 },
               },
@@ -163,42 +149,6 @@ const BlogEditor = () => {
               if (isMountedRef.current) {
                 console.log("Editor.js is ready to work!");
                 setIsEditorReady(true);
-
-                // Add a click listener to the image tool button to show a warning if no page is selected
-                setTimeout(() => {
-                  try {
-                    const imageToolButton =
-                      document.querySelector(".ce-toolbar__plus");
-                    if (imageToolButton) {
-                      imageToolButton.addEventListener("click", () => {
-                        if (!selectedPage) {
-                          const imageButton = document.querySelector(
-                            "[data-tool='image']"
-                          );
-                          if (imageButton) {
-                            imageButton.addEventListener(
-                              "click",
-                              () => {
-                                if (!selectedPage) {
-                                  toast.warning(
-                                    "Please select a page first to enable image uploads",
-                                    {
-                                      position: "top-center",
-                                      autoClose: 3000,
-                                    }
-                                  );
-                                }
-                              },
-                              { once: true }
-                            );
-                          }
-                        }
-                      });
-                    }
-                  } catch (err) {
-                    console.error("Failed to set up image tool warning:", err);
-                  }
-                }, 500);
 
                 // Store the instance in Recoil state
                 setEditorInstances((prev) => {
@@ -278,13 +228,7 @@ const BlogEditor = () => {
         });
       }
     };
-  }, [
-    editor,
-    isEditorReady,
-    setEditorInstances,
-    setMobileLayouts,
-    selectedPage,
-  ]);
+  }, [editor, isEditorReady, setEditorInstances, setMobileLayouts]);
 
   // Fetch categories when page is selected
   useEffect(() => {
@@ -308,7 +252,7 @@ const BlogEditor = () => {
               let categoryField;
               switch (selectedPage) {
                 case "philanthropy":
-                  categoryField = item.philantropyType;
+                  categoryField = item.philantropyType; // Note: server returns without 'h'
                   break;
                 case "know-us":
                   categoryField = item.knowusType;
@@ -410,9 +354,9 @@ const BlogEditor = () => {
           return;
         }
 
-        console.log("Saving payload:", payload);
-        console.log("Using service:", service);
-        console.log("Service method exists:", typeof service.add);
+        console.log("Saving payload:", payload); // Debug log
+        console.log("Using service:", service); // Debug log
+        console.log("Service method exists:", typeof service.add); // Debug log
 
         try {
           // Use the appropriate service to save the blog
@@ -464,7 +408,7 @@ const BlogEditor = () => {
             }
           }
 
-          throw serviceError;
+          throw serviceError; // Re-throw to be handled by outer catch
         }
         toast.success(
           `${
@@ -539,6 +483,27 @@ const BlogEditor = () => {
     toast.success(`Category "${newCategory}" added successfully!`);
   };
 
+  // Debug function to view locally saved content
+  const viewLocalContent = () => {
+    const keys = Object.keys(localStorage).filter((key) =>
+      key.startsWith("blog_")
+    );
+    if (keys.length === 0) {
+      toast.info("No locally saved content found.");
+      return;
+    }
+
+    console.log("Locally saved blog content:");
+    keys.forEach((key) => {
+      const content = JSON.parse(localStorage.getItem(key));
+      console.log(key, content);
+    });
+
+    toast.info(
+      `Found ${keys.length} locally saved blog(s). Check console for details.`
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
@@ -567,9 +532,6 @@ const BlogEditor = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">
                 Select Page <span className="text-red-500">*</span>
-                {!selectedPage && (
-                  <span className="ml-2 text-red-500 font-normal"></span>
-                )}
               </label>
               <select
                 value={selectedPage}
@@ -577,9 +539,7 @@ const BlogEditor = () => {
                   setSelectedPage(e.target.value);
                   setSelectedCategory(""); // Reset category when page changes
                 }}
-                className={`w-full border-2 ${
-                  !selectedPage ? "border-red-300" : "border-gray-200"
-                } px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white`}
+                className="w-full border-2 border-gray-200 px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white"
               >
                 <option value="">-- Choose a Page --</option>
                 {pages.map((page) => (
@@ -647,35 +607,6 @@ const BlogEditor = () => {
               <label className="block text-sm font-semibold text-gray-700 mb-3">
                 Blog Content <span className="text-red-500">*</span>
               </label>
-
-              {!selectedPage && (
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg
-                        className="h-5 w-5 text-yellow-400"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm text-yellow-700">
-                        <strong>Important:</strong> Please select a page before
-                        uploading images. Image uploads will fail until a page
-                        is selected.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               <div
                 id="editorjs"
                 className="border-2 border-gray-200 rounded-lg p-4 min-h-[400px] focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-colors bg-white"
@@ -684,6 +615,13 @@ const BlogEditor = () => {
 
             {/* Save Button */}
             <div className="flex justify-end gap-3 pt-4">
+              <button
+                onClick={viewLocalContent}
+                className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+                title="View locally saved content for debugging"
+              >
+                View Local Content
+              </button>
               <button
                 onClick={handleSave}
                 disabled={!selectedPage || !selectedCategory}

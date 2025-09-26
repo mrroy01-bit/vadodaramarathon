@@ -503,54 +503,42 @@ export const heroImageService = {
 };
 
 // Image Upload Service for EditorJS
+// src/services/imageUploadService.js
 export const imageUploadService = {
-  uploadImage: async (file, page) => {
+  uploadImage: async (file) => {
+    const cloudName = "dou4wvexy";
+    const cloudPreset = "BLOG_UPLOAD_PRESET";
+
     try {
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("file", file);
+      formData.append("upload_preset", cloudPreset);
 
-      // Only 2 routes available
-      let route;
-      if (page === "philanthropy") {
-        route = "/api/philanthropy/add";
-      } else if (page === "know-us") {
-        route = "/api/know-us/add";
-      } else {
-        throw new Error(`No upload API for page: ${page}`);
+      const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
+      const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Cloudinary upload failed with status ${response.status}`
+        );
       }
 
-      const response = await apiClient.post(route, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const data = await response.json();
 
-      return {
-        success: 1,
-        file: {
-          url: response.data.url || response.data.file?.url,
-          name: file.name,
-          size: file.size,
-        },
-      };
+      if (!data.secure_url) {
+        throw new Error("No URL returned from Cloudinary");
+      }
+
+      // Return in EditorJS expected format
+      return { url: data.secure_url };
     } catch (error) {
-      console.error("Upload image error:", error.response?.data || error);
-
-      // Fallback to base64 preview
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          resolve({
-            success: 1,
-            file: {
-              url: e.target.result,
-              name: file.name,
-              size: file.size,
-            },
-          });
-        };
-        reader.readAsDataURL(file);
-      });
+      console.error("Image upload service failed:", error);
+      // Trigger EditorJS fallback
+      return undefined;
     }
   },
 };

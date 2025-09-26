@@ -51,7 +51,6 @@ export function AssociateTab() {
   }, [fetchAssociates]);
 
     useEffect(() => {
-    console.log("Rendering associate data:", associates);
   }, [associates]);
 
  
