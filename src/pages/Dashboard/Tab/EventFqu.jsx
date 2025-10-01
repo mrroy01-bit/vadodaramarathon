@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRecoilState } from "recoil";
-import { pastEventsAtom, faqAtom } from "../../../store/atoms";
-import { pastEventService, faqService } from "../../../services/api";
+import { pastEventsAtom, faqAtom, noticeAtom } from "../../../store/atoms";
+import { pastEventService, faqService, noticeService } from "../../../services/api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEdit, FaTrash, FaPlus, FaList } from "react-icons/fa";
@@ -23,22 +23,34 @@ const EventFAQPage = () => {
     type: "faq",
   });
 
+  const [notice, setNotice] = useState({
+    question: "",
+    answer: "",
+    type: "privacy-notice",
+  });
+
   const [pastEvents, setPastEvents] = useRecoilState(pastEventsAtom);
   const [faqs, setFaqs] = useRecoilState(faqAtom);
+  const [notices, setNotices] = useRecoilState(noticeAtom);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const eventsRes = await pastEventService.getAll();
         setPastEvents(Array.isArray(eventsRes) ? eventsRes : eventsRes.data || []);
+
         const faqsRes = await faqService.getAll();
         setFaqs(Array.isArray(faqsRes) ? faqsRes : faqsRes.data || []);
+
+        const noticesRes = await noticeService.getAll();
+        console.log("Fetched notices:", noticesRes);
+        setNotices(Array.isArray(noticesRes) ? noticesRes : noticesRes.data || []);
       } catch {
         toast.error("Failed to fetch data");
       }
     };
     fetchData();
-  }, [setPastEvents, setFaqs]);
+  }, [setPastEvents, setFaqs, setNotices]);
 
   // -------- Handlers --------
   const handleEventChange = (e, index = null) => {
@@ -59,15 +71,16 @@ const EventFAQPage = () => {
   };
 
   const handleFaqChange = (e) => setFaq({ ...faq, [e.target.name]: e.target.value });
+  const handleNoticeChange = (e) => setNotice({ ...notice, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (activeTab === "event") {
-        const payload = { ...event, event_desc: event.event_desc.filter((d) => d.trim()) };
+        const payload = { ...event, event_desc: event.event_desc.filter(d => d.trim()) };
         if (editingItem) {
           const updated = await pastEventService.update(editingItem._id || editingItem.id, payload);
-          setPastEvents(pastEvents.map((ev) => (ev._id || ev.id) === (updated._id || updated.id) ? updated : ev));
+          setPastEvents(pastEvents.map(ev => (ev._id || ev.id) === (updated._id || updated.id) ? updated : ev));
           toast.success("Event updated successfully!");
         } else {
           const savedEvent = await pastEventService.add(payload);
@@ -75,10 +88,10 @@ const EventFAQPage = () => {
           toast.success("Event added successfully!");
         }
         setEvent({ event_name: "", event_date: "", event_desc: [""] });
-      } else {
+      } else if (activeTab === "faq") {
         if (editingItem) {
           const updated = await faqService.update(editingItem._id || editingItem.id, faq);
-          setFaqs(faqs.map((f) => (f._id || f.id) === (updated._id || updated.id) ? updated : f));
+          setFaqs(faqs.map(f => (f._id || f.id) === (updated._id || updated.id) ? updated : f));
           toast.success("FAQ updated successfully!");
         } else {
           const savedFaq = await faqService.add(faq);
@@ -86,6 +99,17 @@ const EventFAQPage = () => {
           toast.success("FAQ added successfully!");
         }
         setFaq({ question: "", answer: "", type: "faq" });
+      } else if (activeTab === "notice") {
+        if (editingItem) {
+          const updated = await noticeService.update(editingItem._id || editingItem.id, notice);
+          setNotices(notices.map(n => (n._id || n.id) === (updated._id || updated.id) ? updated : n));
+          toast.success("Notice updated successfully!");
+        } else {
+          const savedNotice = await noticeService.add(notice);
+          setNotices([...notices, savedNotice]);
+          toast.success("Notice added successfully!");
+        }
+        setNotice({ title: "", description: "" });
       }
       setEditingItem(null);
     } catch {
@@ -97,10 +121,13 @@ const EventFAQPage = () => {
     try {
       if (type === "event") {
         await pastEventService.delete(id);
-        setPastEvents(pastEvents.filter((e) => (e._id || e.id) !== id));
-      } else {
+        setPastEvents(pastEvents.filter(e => (e._id || e.id) !== id));
+      } else if (type === "faq") {
         await faqService.delete(id);
-        setFaqs(faqs.filter((f) => (f._id || f.id) !== id));
+        setFaqs(faqs.filter(f => (f._id || f.id) !== id));
+      } else if (type === "notice") {
+        await noticeService.delete(id);
+        setNotices(notices.filter(n => (n._id || n.id) !== id));
       }
       toast.success("Deleted successfully!");
     } catch {
@@ -114,8 +141,10 @@ const EventFAQPage = () => {
     setShowAll(false);
     if (type === "event") {
       setEvent({ ...item, event_desc: item.event_desc || [""] });
-    } else {
+    } else if (type === "faq") {
       setFaq({ ...item });
+    } else if (type === "notice") {
+      setNotice({ ...item });
     }
   };
 
@@ -128,19 +157,25 @@ const EventFAQPage = () => {
           className={`flex items-center px-4 py-2 ${activeTab === "event" && !showAll ? "border-b-2 border-blue-500 font-bold" : ""}`}
           onClick={() => { setActiveTab("event"); setShowAll(false); }}
         >
-           Event
+          Event
         </button>
         <button
           className={`flex items-center px-4 py-2 ${activeTab === "faq" && !showAll ? "border-b-2 border-blue-500 font-bold" : ""}`}
           onClick={() => { setActiveTab("faq"); setShowAll(false); }}
         >
-           FAQ
+          FAQ
+        </button>
+        <button
+          className={`flex items-center px-4 py-2 ${activeTab === "notice" && !showAll ? "border-b-2 border-blue-500 font-bold" : ""}`}
+          onClick={() => { setActiveTab("notice"); setShowAll(false); }}
+        >
+          Notice
         </button>
         <button
           className={`flex items-center px-4 py-2 ${showAll ? "border-b-2 border-blue-500 font-bold" : ""}`}
           onClick={() => setShowAll(!showAll)}
         >
-           See All
+          See All
         </button>
       </div>
 
@@ -214,6 +249,28 @@ const EventFAQPage = () => {
             </div>
           )}
 
+          {activeTab === "notice" && (
+            <div className="space-y-4">
+              <input
+                type="text"
+                name="question"
+                value={notice.question}
+                onChange={handleNoticeChange}
+                placeholder="Notice Question"
+                className="w-full border px-3 py-2 rounded"
+                required
+              />
+              <textarea
+                name="answer"
+                value={notice.answer}
+                onChange={handleNoticeChange}
+                placeholder="Notice Answer"
+                className="w-full border px-3 py-2 rounded"
+                required
+              />
+            </div>
+          )}
+
           <button type="submit" className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center">
             <FaPlus className="mr-1" /> {editingItem ? "Update" : "Save"}
           </button>
@@ -224,7 +281,7 @@ const EventFAQPage = () => {
       {showAll && (
         <div className="space-y-4">
           <h2 className="text-xl font-bold flex items-center gap-2"><FaList /> All Events</h2>
-          {Array.isArray(pastEvents) && pastEvents.length > 0 ? (
+          {pastEvents.length > 0 ? (
             pastEvents.map((e) => (
               <div key={e._id || e.id} className="flex justify-between items-center border p-2 rounded">
                 <div>
@@ -242,12 +299,10 @@ const EventFAQPage = () => {
                 </div>
               </div>
             ))
-          ) : (
-            <p>No events available</p>
-          )}
+          ) : <p>No events available</p>}
 
           <h2 className="text-xl font-bold mt-4 flex items-center gap-2"><FaList /> All FAQs</h2>
-          {Array.isArray(faqs) && faqs.length > 0 ? (
+          {faqs.length > 0 ? (
             faqs.map((f) => (
               <div key={f._id || f.id} className="flex justify-between items-center border p-2 rounded">
                 <div>
@@ -264,9 +319,27 @@ const EventFAQPage = () => {
                 </div>
               </div>
             ))
-          ) : (
-            <p>No FAQs available</p>
-          )}
+          ) : <p>No FAQs available</p>}
+
+          <h2 className="text-xl font-bold mt-4 flex items-center gap-2"><FaList /> All Notices</h2>
+          {notices.length > 0 ? (
+            notices.map((n) => (
+              <div key={n._id || n.id} className="flex justify-between items-center border p-2 rounded">
+                <div>
+                  <p className="font-semibold">{n.question}</p>
+                  <p>{n.answer}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => handleEdit(n, "notice")} className="px-2 py-1 bg-yellow-400 text-white rounded flex items-center">
+                    <FaEdit />
+                  </button>
+                  <button onClick={() => handleDelete(n._id || n.id, "notice")} className="px-2 py-1 bg-red-500 text-white rounded flex items-center">
+                    <FaTrash />
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : <p>No Notices available</p>}
         </div>
       )}
 

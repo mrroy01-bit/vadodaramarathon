@@ -30,3 +30,9 @@ export const mobileLayoutStateAtom = atom({
   key: "mobileLayoutStateAtom",
   default: new Map(), // Map to store mobile layout toggle states by editor ID
 });
+
+
+export const noticeAtom = atom({
+  key: "noticeAtom", // unique ID for this atom
+  default: [],       // default value is an empty array
+});

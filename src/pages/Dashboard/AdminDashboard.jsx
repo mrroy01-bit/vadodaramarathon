@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { RaceTab } from "./Tab/RaceCategory";
 import BannerTab from "./Tab/Banner";
-import { FaUserCircle, FaImages, FaImage, FaUsers, FaUserPlus, FaSpinner, FaBars } from "react-icons/fa";
+import {
+  FaUserCircle,
+  FaImages,
+  FaImage,
+  FaUsers,
+  FaUserPlus,
+  FaSpinner,
+  FaBars,
+  FaEnvelope,
+} from "react-icons/fa";
 import { TfiWrite } from "react-icons/tfi";
 
 import AllUser from "./Tab/allUser";
@@ -12,7 +21,8 @@ import { PartnersTab } from "./Tab/Partners";
 import { AssociateTab } from "./Tab/Associate";
 import { userService } from "../../services/api";
 import BlogEditor from "./Tab/BlogEditor";
-import EventFqu   from "./Tab/EventFqu";
+import EventFqu from "./Tab/EventFqu";
+import { ContactTab } from "./Tab/Contact";
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
@@ -63,11 +73,11 @@ export default function Dashboard() {
     fetchAdminProfile();
   }, []);
 
- const handleSignOut = () => {
+  const handleSignOut = () => {
     setAuthToken(null);
     navigate("/admin-login");
   };
- const tabs = [
+  const tabs = [
     { id: "race", icon: <FaImages />, label: "Photo Gallery" },
     { id: "banner", icon: <FaImage />, label: "Banner Management" },
     { id: "sponsor", icon: <FaImage />, label: "Sponsor Management" },
@@ -76,10 +86,8 @@ export default function Dashboard() {
     { id: "associate", icon: <FaImage />, label: "Associate Management" },
     { id: "blog", icon: <TfiWrite />, label: "Blog Management" },
     { id: "eventfqu", icon: <TfiWrite />, label: "Events & FAQs" },
+    { id: "contact", icon: <FaEnvelope />, label: "Contact Submissions" },
   ];
-  
-
-  
 
   return (
     <div className="min-h-screen flex bg-gray-100">
@@ -90,7 +98,11 @@ export default function Dashboard() {
         }`}
       >
         <div className="flex items-center justify-between mb-8">
-          {!collapsed && <h2 className="text-2xl font-bold text-blue-700 tracking-wide">Dashboard</h2>}
+          {!collapsed && (
+            <h2 className="text-2xl font-bold text-blue-700 tracking-wide">
+              Dashboard
+            </h2>
+          )}
           <button
             className="p-2 rounded hover:bg-gray-100 transition-all"
             onClick={() => setCollapsed(!collapsed)}
@@ -107,7 +119,9 @@ export default function Dashboard() {
                 activeTab === tab.id
                   ? "bg-blue-600 text-white shadow-lg transform scale-105"
                   : "hover:bg-blue-50 text-gray-700"
-              } justify-center ${collapsed ? "justify-center" : "justify-start"}`}
+              } justify-center ${
+                collapsed ? "justify-center" : "justify-start"
+              }`}
               onClick={() => setActiveTab(tab.id)}
               title={collapsed ? tab.label : ""}
             >
@@ -137,6 +151,8 @@ export default function Dashboard() {
               ? "Events & FAQs"
               : activeTab === "associate"
               ? "Associate Management"
+              : activeTab === "contact"
+              ? "Contact Form Submissions"
               : "User Management"}
           </h1>
           <div className="relative group">
@@ -147,17 +163,27 @@ export default function Dashboard() {
               ) : error ? (
                 <span className="font-medium text-red-600">Error</span>
               ) : (
-                <span className="font-medium text-gray-700">{adminProfile.name}</span>
+                <span className="font-medium text-gray-700">
+                  {adminProfile.name}
+                </span>
               )}
             </div>
             <div className="absolute right-0 mt-2 w-64 bg-white border rounded-xl shadow-xl p-4 hidden group-hover:block z-10 transition-all">
               <div className="flex flex-col items-center mb-4 pb-4 border-b">
                 <FaUserCircle className="w-16 h-16 text-blue-600 mb-2" />
                 <p className="text-sm font-medium text-gray-800">
-                  {loading ? <FaSpinner className="w-4 h-4 animate-spin" /> : adminProfile.name}
+                  {loading ? (
+                    <FaSpinner className="w-4 h-4 animate-spin" />
+                  ) : (
+                    adminProfile.name
+                  )}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {loading ? <FaSpinner className="w-3 h-3 animate-spin" /> : adminProfile.email}
+                  {loading ? (
+                    <FaSpinner className="w-3 h-3 animate-spin" />
+                  ) : (
+                    adminProfile.email
+                  )}
                 </p>
                 {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
               </div>
@@ -180,6 +206,7 @@ export default function Dashboard() {
           {activeTab === "associate" && <AssociateTab />}
           {activeTab === "blog" && <BlogEditor />}
           {activeTab === "eventfqu" && <EventFqu />}
+          {activeTab === "contact" && <ContactTab />}
           {activeTab === "user" && (
             <div className="space-y-6">
               <div className="flex gap-4 mb-6">

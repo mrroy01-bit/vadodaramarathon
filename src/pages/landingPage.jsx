@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Header from "../Component/Header";
 import Banner from "../assest/banner.jpg"; 
 import VideoCard from "../Component/VideoCard";
-import { /*.heroImageService,*/ raceCategoryService, } from "../services/api";
+import {heroImageService, raceCategoryService, } from "../services/api";
 import SponsorSlider from "../Component/SponsorSlider";
 import ValuablePartners from "../Component/ValuedPartners";
 import ValuableAssociates from "../Component/ValuableAssociates";
@@ -11,7 +11,7 @@ import Footer from "../Component/Footer/Footer";
 import { FaClipboardList, FaQuestionCircle, FaMoneyCheckAlt } from "react-icons/fa";
 
 const LandingPage = () => {
-  const [heroImage,/* setHeroImage*/] = useState(null);
+  const [heroImage, setHeroImage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [/*error*/, setError] = useState(null);
   const [raceCategories, setRaceCategories] = useState([]);
@@ -20,18 +20,18 @@ const LandingPage = () => {
     const fetchData = async () => {
       setIsLoading(true); // Start loading state
       try {
-        const [ /* heroData */ categoriesData,] = await Promise.all([
-          // heroImageService.getHeroImage(),
+        const [heroData, categoriesData] = await Promise.all([
+          heroImageService.getAllHero(),
           raceCategoryService.getAllCategories(),
         ]);
 
-        // console.log("Hero Image API Response:", heroData);
-        // console.log("Race Categories API Response:", categoriesData);
+        console.log("Hero Image API Response:", heroData);
+        console.log("Race Categories API Response:", categoriesData);
         
         // Safely set the hero image URL from the response object
-        // if (heroData && heroData.imageUrl) {
-        //   setHeroImage(heroData.imageUrl);
-        // }
+         if (heroData?.data?.length > 0) {
+        setHeroImage(heroData.data[0].hero_image_file_url); 
+      }
 
         // Safely set the categories, ensuring it's always an array
         const categories = categoriesData?.data || [];
@@ -74,7 +74,7 @@ const LandingPage = () => {
             <div className="w-full h-64 sm:h-96 bg-gray-200 animate-pulse"></div>
           ) : (
             <img
-              src={heroImage || Banner} // Use fetched image, or fallback to the imported one
+              src={heroImage } // Use fetched image, or fallback to the imported one
               alt="Marathon Banner"
               className="w-full h-auto object-cover"
             />

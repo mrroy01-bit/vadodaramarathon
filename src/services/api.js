@@ -481,6 +481,34 @@ export const heroImageService = {
     }
   },
 
+  // Get all hero images
+  getAllHero: async () => {
+    try {
+      const response = await apiClient.get("/api/hero-image/fetch-hero-image");
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error fetching hero images:",
+        error.response?.data || error
+      );
+      throw error;
+    }
+  },
+
+  // Get hero image by ID
+  getHeroById: async (id) => {
+    try {
+      const response = await apiClient.get(`/api/hero-image/fetch-hero/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error fetching hero image ${id}:`,
+        error.response?.data || error
+      );
+      throw error;
+    }
+  },
+
   // Update hero image
   updateHeroImage: async (file) => {
     try {
@@ -497,6 +525,20 @@ export const heroImageService = {
       return response.data;
     } catch (error) {
       console.error("Update hero image error:", error.response?.data || error);
+      throw error;
+    }
+  },
+
+  // Delete hero image
+  deleteHeroImage: async (id) => {
+    try {
+      const response = await apiClient.delete(`/api/hero-image/delete/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error deleting hero image ${id}:`,
+        error.response?.data || error
+      );
       throw error;
     }
   },
@@ -937,6 +979,86 @@ export const faqService = {
   },
 };
 
+export const noticeService = {
+  // Add a new notice
+  add: async (payload) => {
+    try {
+      const response = await apiClient.post(
+        `/api/privacy-notice/add`,
+        payload,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error adding notice:", error.response?.data || error);
+      throw error;
+    }
+  },
+
+  // Get all notices
+  getAll: async () => {
+    try {
+      const response = await apiClient.get(`/api/privacy-notice/all`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching notices:", error.response?.data || error);
+      throw error;
+    }
+  },
+
+  // Get a single notice by ID
+  get: async (id) => {
+    try {
+      const response = await apiClient.get(`/api/privacy-notice/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error fetching notice ${id}:`,
+        error.response?.data || error
+      );
+      throw error;
+    }
+  },
+
+  // Update a notice by ID
+  update: async (id, payload) => {
+    try {
+      const response = await apiClient.put(
+        `/api/privacy-notice/update/${id}`,
+        payload,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error updating notice ${id}:`,
+        error.response?.data || error
+      );
+      throw error;
+    }
+  },
+
+  // Delete a notice by ID
+  delete: async (id) => {
+    try {
+      const response = await apiClient.delete(
+        `/api/privacy-notice/delete/${id}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error deleting notice ${id}:`,
+        error.response?.data || error
+      );
+      throw error;
+    }
+  },
+};
+
 export const knowUsService = {
   add: async (data) => {
     const res = await apiClient.post("/api/know-us/add", data);
@@ -1004,6 +1126,54 @@ export const causesService = {
   },
   remove: async (id) => {
     const res = await apiClient.delete(`/api/causes/${id}`);
+    return res.data;
+  },
+};
+
+// --- Contact Service ---
+export const contactService = {
+  add: async (data) => {
+    const res = await apiClient.post("/api/contact-us/add", data);
+    return res.data;
+  },
+  getAll: async () => {
+    const res = await apiClient.get("/api/contact-us/all");
+    return res.data;
+  },
+  getById: async (id) => {
+    const res = await apiClient.get(`/api/contact-us/${id}`);
+    return res.data;
+  },
+  update: async (id, data) => {
+    const res = await apiClient.put(`/api/contact-us/update/${id}`, data);
+    return res.data;
+  },
+  remove: async (id) => {
+    const res = await apiClient.delete(`/api/contact-us/delete/${id}`);
+    return res.data;
+  },
+};
+
+// --- VM Editions Service ---
+export const vmEditionsService = {
+  add: async (data) => {
+    const res = await apiClient.post("/api/vm-edition/add", data);
+    return res.data;
+  },
+  getAll: async () => {
+    const res = await apiClient.get("/api/vm-edition/all");
+    return res.data;
+  },
+  getById: async (id) => {
+    const res = await apiClient.get(`/api/vm-edition/${id}`);
+    return res.data;
+  },
+  update: async (id, data) => {
+    const res = await apiClient.put(`/api/vm-edition/update/${id}`, data);
+    return res.data;
+  },
+  remove: async (id) => {
+    const res = await apiClient.delete(`/api/vm-edition/delete/${id}`);
     return res.data;
   },
 };

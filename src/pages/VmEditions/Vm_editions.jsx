@@ -1,26 +1,158 @@
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { FiMenu, FiX } from "react-icons/fi"; 
-import Sidebar from "../VmEditions/SidebarTab";
+import { useState, useEffect, useRef } from "react";
+import { FiMenu, FiX } from "react-icons/fi";
+import Sidebar from "./SidebarTab";
 import Header from "../../Component/Header";
 import Footer from "../../Component/Footer/Footer";
+import { vmEditionsService } from "../../services/api";
+import EditorJS from "@editorjs/editorjs";
+import HeaderTool from "@editorjs/header";
+import ListTool from "@editorjs/list";
+import ImageTool from "@editorjs/image";
 
 export default function VmEditions() {
-  const location = useLocation();
-  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeKey, setActiveKey] = useState("edition12");
+  const [content, setContent] = useState(null);
 
-  // Determine active tab from URL path
-  const activeKey = location.pathname.split("/")[2] || "12th-edition";
+  const editorRef = useRef(null); // EditorJS instance
+  const holderRef = useRef(null); // EditorJS container
+
+  // Fetch content for active category
+  const fetchContent = async (key) => {
+    try {
+      const response = await vmEditionsService.getAll();
+      console.log("VM Editions response:", response);
+      const data = response.data || response;
+
+      const selectedContent = data.find((item) => item.vmeditionsSlug === key);
+      console.log("Selected content:", selectedContent, "for key:", key);
+      setContent(selectedContent || null);
+    } catch (error) {
+      console.error("Error fetching VM Editions content:", error);
+      setContent(null);
+    }
+  };
+
+  useEffect(() => {
+    console.log("Active key changed to:", activeKey);
+    fetchContent(activeKey);
+  }, [activeKey]);
+
+  // Initialize Editor.js and load content whenever it changes
+  useEffect(() => {
+    if (!holderRef.current) return;
+
+    const setup = async () => {
+      // Destroy any existing instance first to avoid holder conflicts
+      if (
+        editorRef.current &&
+        typeof editorRef.current.destroy === "function"
+      ) {
+        try {
+          await editorRef.current.destroy();
+        } catch (e) {
+          console.debug("Editor destroy error:", e);
+        } finally {
+          editorRef.current = null;
+        }
+      }
+
+      // Parse stored content (it may be a JSON string)
+      let parsedData = undefined;
+      if (content?.vmeditionsContent) {
+        try {
+          parsedData =
+            typeof content.vmeditionsContent === "string"
+              ? JSON.parse(content.vmeditionsContent)
+              : content.vmeditionsContent;
+          console.log("Successfully parsed content:", parsedData);
+        } catch (e) {
+          console.error("Failed to parse VM Editions content:", e);
+        }
+      }
+
+      // Normalize possible non-standard image shapes in saved data
+      const normalizedData = (() => {
+        if (!parsedData || !Array.isArray(parsedData.blocks)) {
+          return parsedData;
+        }
+        const normalizedBlocks = parsedData.blocks.map((block) => {
+          if (block?.type !== "image") return block;
+          const data = block.data || {};
+          const file = data.file || {};
+          const urlCandidate =
+            file.url ||
+            data.url ||
+            data.src ||
+            data.imageUrl ||
+            data.imageURL ||
+            data.path;
+          if (!urlCandidate) return block;
+          return {
+            ...block,
+            data: {
+              ...data,
+              file: { url: urlCandidate },
+            },
+          };
+        });
+        const result = { ...parsedData, blocks: normalizedBlocks };
+        try {
+          const firstImage = normalizedBlocks.find((b) => b.type === "image");
+          if (firstImage) {
+            console.log("Normalized first image block:", firstImage);
+          }
+        } catch (_) {}
+        return result;
+      })();
+
+      // Create a fresh instance with provided data
+      editorRef.current = new EditorJS({
+        holder: holderRef.current,
+        readOnly: true,
+        tools: {
+          header: HeaderTool,
+          list: ListTool,
+          image: {
+            class: ImageTool,
+          },
+        },
+        data: normalizedData || { time: Date.now(), blocks: [] },
+      });
+    };
+
+    setup();
+
+    return () => {
+      if (editorRef.current) {
+        try {
+          if (typeof editorRef.current.destroy === "function") {
+            editorRef.current.destroy();
+          }
+        } catch (e) {
+          console.debug("Editor cleanup error:", e);
+        } finally {
+          editorRef.current = null;
+        }
+      }
+    };
+  }, [content]);
+
+  // Handle sidebar click
+  const handleCategoryClick = (key) => {
+    const sanitizedKey = key.replace(/[^a-z0-9-]/gi, "").toLowerCase();
+    setActiveKey(sanitizedKey);
+    setSidebarOpen(false);
+  };
 
   return (
     <>
       <Header />
-      <div className="flex  min-h-screen relative">
+      <div className="flex min-h-screen relative">
         {/* Mobile menu icon */}
         {!sidebarOpen && (
           <button
-            className="md:hidden absolute top-4 mt-20 ml-44 left-4 "
+            className="md:hidden absolute top-4 mt-24 ml-44 left-4"
             onClick={() => setSidebarOpen(true)}
             aria-label="Open sidebar"
           >
@@ -31,13 +163,12 @@ export default function VmEditions() {
         {/* Sidebar */}
         <div
           className={`
-            fixed inset-y-0  left-0 z-40 transition-transform duration-200
-            bg-white  md:static md:translate-x-0
+            fixed inset-y-0 left-0 z-40 transition-transform duration-200
+            bg-white md:static md:translate-x-0
             ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
             md:block
           `}
         >
-          {/* Close icon for mobile */}
           <div className="md:hidden flex justify-end p-4">
             <button
               onClick={() => setSidebarOpen(false)}
@@ -46,13 +177,7 @@ export default function VmEditions() {
               <FiX size={28} />
             </button>
           </div>
-          <Sidebar
-            activeKey={activeKey}
-            setActiveKey={(key) => {
-              navigate(`/vm/${key}`);
-              setSidebarOpen(false); // Close sidebar on navigation (mobile)
-            }}
-          />
+          <Sidebar activeKey={activeKey} setActiveKey={handleCategoryClick} />
         </div>
 
         {/* Overlay for mobile */}
@@ -63,8 +188,22 @@ export default function VmEditions() {
           />
         )}
 
-        <main className="flex-1 p-6">
-          <Outlet />
+        {/* Main content */}
+        <main className="flex-1 p-6 mt-24 md:mt-0">
+          {content ? (
+            <div>
+              <h1 className="text-2xl font-bold mb-4">
+                {content.vmeditionsType}
+              </h1>
+              {content.vmeditionsContent ? (
+                <div ref={holderRef} id="editorjs-holder" />
+              ) : (
+                <p>No content available</p>
+              )}
+            </div>
+          ) : (
+            <p>Select a category to see content</p>
+          )}
         </main>
       </div>
       <Footer />

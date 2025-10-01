@@ -13,6 +13,7 @@ import {
   knowUsService,
   philanthropyService,
   causesService,
+  vmEditionsService,
   imageUploadService,
 } from "../../../services/api";
 import { toast, ToastContainer } from "react-toastify";
@@ -23,6 +24,7 @@ const pages = [
   { id: "know-us", label: "Know Us" },
   { id: "philanthropy", label: "Philanthropy" },
   { id: "causes", label: "Causes We Support" },
+  { id: "vmEditions", label: "vmEditions" },
 ];
 
 const BlogEditor = () => {
@@ -260,6 +262,9 @@ const BlogEditor = () => {
                 case "causes":
                   categoryField = item.causesType;
                   break;
+                case "vmEditions":
+                  categoryField = item.vmeditionsType;
+                  break;
                 default:
                   break;
               }
@@ -293,6 +298,8 @@ const BlogEditor = () => {
         return knowUsService;
       case "causes":
         return causesService;
+      case "vmEditions":
+        return vmEditionsService;
       default:
         return null;
     }
@@ -319,6 +326,12 @@ const BlogEditor = () => {
           causesType: category,
           causesContent: JSON.stringify(content),
           causesSlug: slug,
+        };
+      case "vmEditions":
+        return {
+          vmeditionsType: category,
+          vmeditionsContent: JSON.stringify(content),
+          vmeditionsSlug: slug,
         };
       default:
         return {};
